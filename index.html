@@ -223,7 +223,7 @@ dialog button{margin-top:10px}
   <button type="button" class="btn btn-ghost" style="background:#FFFFFF" id="poster-close">關閉</button>
 </dialog>
 
-<script src="config.js"></script>
+<script src="config.js?v=2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (function(){
@@ -254,12 +254,12 @@ dialog button{margin-top:10px}
   }
 
   async function apiGet(params){
-    const r = await fetch(API + "?" + new URLSearchParams(params).toString());
+    const r = await fetch(API + "?" + new URLSearchParams(params).toString(), {credentials:"omit"});
     return r.json();
   }
   async function apiPost(body){
     // 不加 Content-Type（預設 text/plain），Apps Script 才不會擋跨網域
-    const r = await fetch(API, {method:"POST", body: JSON.stringify(body)});
+    const r = await fetch(API, {method:"POST", body: JSON.stringify(body), credentials:"omit"});
     return r.json();
   }
 
