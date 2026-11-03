@@ -203,18 +203,55 @@ function data_(b) {
   }
   const count = {};
   rows.forEach(function (r) { count[r.code] = (count[r.code] || 0) + 1; });
+  let tabs = {}, sheet = null;
+  if (role === 'admin') {
+    try {
+      tabs = communityTabs_(all);
+      sheet = { url: ss_().getUrl(), gid: sheet_(SHEET_DATA).getSheetId() };
+    } catch (err) { /* 建分頁失敗不影響後台 */ }
+  }
   return {
     ok: true,
     role: role,
+    sheet: sheet, // 只有管理者拿得到試算表連結
     communities: comms.map(function (c) {
       const o = { code: c.code, name: c.name, time: c.time, place: c.place, line: c.line, open: c.open, cap: c.cap, count: count[c.code] || 0 };
-      if (role === 'admin') o.pass = c.pass; // 只有管理者拿得到社區密碼（方便轉交社區負責人）
+      if (role === 'admin') { o.pass = c.pass; o.gid = tabs[c.code]; } // 只有管理者拿得到社區密碼與分頁
       return o;
     }),
     rows: rows.map(function (r) {
       return { time: r.time, no: r.no, code: r.code, cname: r.cname, name: r.name, gender: r.gender, age: r.age, phone: r.phone };
     })
   };
+}
+
+/**
+ * 每個社區一個分頁「名單｜社區名稱」，用公式自動篩出該社區的報名（不用手動整理）。
+ * 管理者後台的「開啟試算表」會直接跳到這個分頁。沒有的話自動建立。
+ */
+function communityTabs_(all) {
+  const ss = ss_();
+  const data = sheet_(SHEET_DATA);
+  const head = header_(data, DATA_HEAD);
+  const n = head.length;
+  const col = function (i) { return String.fromCharCode(65 + i); };
+  const last = col(n - 1);
+  const codeCol = col(Math.max(0, head.indexOf('社區代碼')));
+  const src = "'" + SHEET_DATA + "'!";
+  const map = {};
+  all.forEach(function (c) {
+    const name = ('名單｜' + c.name).slice(0, 90);
+    let sh = ss.getSheetByName(name);
+    if (!sh) {
+      sh = ss.insertSheet(name);
+      sh.getRange(1, 1).setFormula('={' + src + 'A1:' + last + '1}');
+      sh.getRange(2, 1).setFormula('=IFERROR(FILTER(' + src + 'A2:' + last + ', ' + src + codeCol + '2:' + codeCol + '="' + c.code + '"), "（目前還沒有人報名）")');
+      sh.setFrozenRows(1);
+      sh.getRange(1, 1, 1, n).setFontWeight('bold');
+    }
+    map[c.code] = sh.getSheetId();
+  });
+  return map;
 }
 
 /* ---------------- 工具 ---------------- */

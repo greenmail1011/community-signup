@@ -48,6 +48,9 @@ input:focus{border-color:var(--blue);outline:none}
 .btn-ghost{background:#FFFFFF;color:var(--blue);border:1.5px solid #B9CDEB}
 .btn-ghost:hover{background:var(--sky)}
 .btn-sm{min-height:36px;padding:4px 10px;font-size:14px}
+.btn-sheet{background:#188038;color:#FFFFFF}
+.btn-sheet:hover{background:#136C2E}
+.btn-sheet::before{content:"";width:14px;height:16px;border-radius:2px;background:#FFFFFF;box-shadow:inset 0 -5px 0 #A8DAB5,inset 0 -10px 0 #FFFFFF,inset 0 -11px 0 #A8DAB5;flex:0 0 auto}
 .err{color:var(--err);font-weight:700}
 
 /* stats */
@@ -138,6 +141,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
         <input type="search" id="q" placeholder="搜尋姓名或手機" aria-label="搜尋">
         <button type="button" class="btn btn-ghost" id="csv">下載 Excel（CSV）</button>
         <button type="button" class="btn btn-ghost" id="phones">複製手機號碼</button>
+        <a class="btn btn-sheet" id="sheet-btn" target="_blank" rel="noopener" hidden>開啟 Google 試算表</a>
       </div>
       <p class="muted" id="updated" style="margin-top:8px"></p>
       <ul class="list" id="list"></ul>
@@ -262,7 +266,8 @@ dialog h3{font-size:20px;margin-bottom:4px}
             btn("複製報名連結", () => copy(url)),
             btn("報名 QR", () => openQr(c.name, url, c.code)),
             btn("複製給社區負責人", () => copy(msg)),
-            el("a", {className:"btn btn-ghost btn-sm", href:url, target:"_blank", rel:"noopener", textContent:"開啟報名頁"}))
+            el("a", {className:"btn btn-ghost btn-sm", href:url, target:"_blank", rel:"noopener", textContent:"開啟報名頁"}),
+            sheetUrl(c.code) ? el("a", {className:"btn btn-sheet btn-sm", href:sheetUrl(c.code), target:"_blank", rel:"noopener", textContent:"開啟試算表名單"}) : null)
         ));
       });
       // 篩選
@@ -294,7 +299,22 @@ dialog h3{font-size:20px;margin-bottom:4px}
 
   function btn(t, fn){ const b = el("button", {type:"button", className:"btn btn-ghost btn-sm", textContent:t}); b.addEventListener("click", fn); return b; }
 
+  // 管理者：對應的 Google 試算表分頁（全部 → 報名總表；某社區 → 名單｜該社區）
+  function sheetUrl(code){
+    if (!DATA || !DATA.sheet || !DATA.sheet.url) return "";
+    const c = code && code !== "all" ? DATA.communities.find(x => x.code === code) : null;
+    const gid = c && c.gid != null ? c.gid : DATA.sheet.gid;
+    return DATA.sheet.url.replace(/#.*$/, "") + "#gid=" + gid;
+  }
+
   function renderList(){
+    const sb = $("#sheet-btn"), su = sheetUrl(FILTER);
+    sb.hidden = !su;
+    if (su) {
+      sb.href = su;
+      const c = DATA.communities.find(x => x.code === FILTER);
+      sb.textContent = c ? "開啟試算表（" + c.name.replace(/社區發展協會$/, "") + "）" : "開啟 Google 試算表";
+    }
     const admin = DATA.role === "admin";
     const rows = rowsInView();
     const scope = DATA.rows.filter(r => FILTER === "all" || r.code === FILTER);
