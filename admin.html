@@ -57,8 +57,11 @@ input:focus{border-color:var(--blue);outline:none}
 .err{color:var(--err);font-weight:700}
 .g-box{display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}
 .g-btn{min-height:44px;display:flex;justify-content:center}
-.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-weight:700;margin:6px 0}
-.or::before,.or::after{content:"";flex:1;border-top:2px dashed var(--border)}
+.pw-box{border-top:2px dashed var(--border);padding-top:12px;display:flex;flex-direction:column;gap:10px}
+.pw-box summary{cursor:pointer;color:var(--muted);font-weight:700;text-align:center;list-style-position:inside}
+.pw-box[open]{gap:10px}
+.pw-box[open]>*:not(summary){display:block;margin-top:10px}
+.pw-box .btn{display:flex;width:100%}
 
 /* stats */
 .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
@@ -121,16 +124,17 @@ dialog h3{font-size:20px;margin-bottom:4px}
   <form class="card login" id="login">
     <h2>登入報名後台</h2>
     <div class="g-box">
-      <p class="muted"><b>管理者</b>請用 Google 帳號登入</p>
+      <p class="muted"><b id="org-name">新竹市無人機創新科技協會</b>成員<br>請用 Google 帳號登入</p>
       <div class="g-btn" id="g-btn"><span class="muted">Google 登入按鈕載入中…</span></div>
       <p class="err" id="g-err" role="alert" hidden></p>
     </div>
-    <div class="or">社區負責人</div>
-    <p class="muted">請輸入你們社區的後台密碼，只會看到自己社區的報名資料。</p>
-    <label for="key" class="muted" style="font-weight:700">密碼</label>
-    <input type="password" id="key" autocomplete="current-password" autocapitalize="off" spellcheck="false">
-    <p class="err" id="login-err" role="alert" hidden></p>
-    <button class="btn btn-primary" id="login-btn" type="submit">登入</button>
+    <details class="pw-box" id="pw-box">
+      <summary>沒辦法用 Google 登入？改用備用密碼</summary>
+      <label for="key" class="muted" style="font-weight:700">備用密碼</label>
+      <input type="password" id="key" autocomplete="current-password" autocapitalize="off" spellcheck="false">
+      <p class="err" id="login-err" role="alert" hidden></p>
+      <button class="btn btn-primary" id="login-btn" type="submit">登入</button>
+    </details>
   </form>
 
   <div id="app" hidden style="display:flex;flex-direction:column;gap:18px">
@@ -138,7 +142,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
     <section class="stats" id="stats" aria-label="報名統計"></section>
 
     <section class="card" id="comm-card" hidden>
-      <h2>各社區報名頁與後台密碼</h2>
+      <h2>各社區報名頁</h2>
       <div class="comms" id="comms"></div>
     </section>
 
@@ -203,7 +207,6 @@ dialog h3{font-size:20px;margin-bottom:4px}
     }
   }
   const regUrl = code => new URL("./?c=" + encodeURIComponent(code), location.href).href;
-  const adminUrl = () => new URL("admin.html", location.href).href;
   const fmtPhone = p => /^09\d{8}$/.test(p) ? p.slice(0,4) + "-" + p.slice(4,7) + "-" + p.slice(7) : p;
 
   async function load(cred){
@@ -214,7 +217,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
   function errText(r){
     return r.error === "wrong_key" ? "密碼不對，請再確認一次"
       : r.error === "locked" ? "錯誤次數太多，請 10 分鐘後再試"
-      : r.error === "not_admin" ? "這個 Google 帳號（" + (r.email || "") + "）不在管理者名單裡。社區負責人請用下面的社區密碼登入。"
+      : r.error === "not_admin" ? "這個 Google 帳號（" + (r.email || "") + "）不在協會成員名單裡，請洽系統管理員加入。"
       : r.error === "google_invalid" ? "Google 登入已過期，請再按一次「使用 Google 帳戶登入」"
       : "讀取失敗，請稍後再試";
   }
@@ -273,6 +276,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
       else box.innerHTML = '<span class="muted">Google 登入載入失敗，請重新整理頁面</span>';
     })();
   }
+  if (CFG.ORG_NAME) $("#org-name").textContent = CFG.ORG_NAME;
   initGoogle();
   $("#refresh").addEventListener("click", async () => {
     const b = $("#refresh"); b.disabled = true; b.textContent = "更新中…";
@@ -298,7 +302,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
   function render(){
     const admin = DATA.role === "admin";
     const role = $("#role"); role.hidden = false;
-    role.textContent = admin ? "管理者｜全部社區" + (DATA.who ? "（" + DATA.who + "）" : "") : DATA.communities.map(c => c.name).join("、");
+    role.textContent = admin ? (DATA.who ? "協會成員｜" + DATA.who : "管理者｜全部社區") : DATA.communities.map(c => c.name).join("、");
     document.title = "報名後台｜" + role.textContent;
 
     // 社區卡片（管理者）
@@ -309,10 +313,11 @@ dialog h3{font-size:20px;margin-bottom:4px}
       DATA.communities.forEach(c => {
         const url = regUrl(c.code);
         const kv = el("dl", {className:"kv"});
-        [["時間", c.time], ["地點", c.place], ["報名頁", url], ["後台密碼", c.pass || "（未設定）"]].forEach(([k, v]) => {
+        [["時間", c.time], ["地點", c.place], ["報名頁", url]].forEach(([k, v]) => {
           if (v) kv.append(el("dt", {textContent:k}), el("dd", {textContent:v}));
         });
-        const msg = c.name + "｜報名後台\n" + adminUrl() + "\n密碼：" + (c.pass || "") + "\n\n報名頁（可轉發給里民）：\n" + url;
+        // 對外貼文用：社區、時間、地點、報名連結
+        const msg = (CFG.EVENT_TITLE || "") + "｜" + c.name + "\n" + (c.time ? "時間：" + c.time + "\n" : "") + (c.place ? "地點：" + c.place + "\n" : "") + "報名：" + url;
         box.append(el("div", {className:"comm"},
           el("div", {className:"comm-h"},
             el("h3", {textContent:c.name}),
@@ -323,7 +328,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
           el("div", {className:"row-btns"},
             btn("複製報名連結", () => copy(url)),
             btn("報名 QR", () => openQr(c.name, url, c.code)),
-            btn("複製給社區負責人", () => copy(msg)),
+            btn("複製報名訊息", () => copy(msg)),
             el("a", {className:"btn btn-ghost btn-sm", href:url, target:"_blank", rel:"noopener", textContent:"開啟報名頁"}),
             sheetUrl(c.code) ? el("a", {className:"btn btn-sheet btn-sm", href:sheetUrl(c.code), target:"_blank", rel:"noopener", textContent:"開啟試算表名單"}) : null)
         ));
