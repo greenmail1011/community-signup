@@ -135,7 +135,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
       <h2>報名名單</h2>
       <div class="chips" id="chips" hidden></div>
       <div class="toolbar">
-        <input type="search" id="q" placeholder="搜尋姓名、手機、LINE 名稱" aria-label="搜尋">
+        <input type="search" id="q" placeholder="搜尋姓名或手機" aria-label="搜尋">
         <button type="button" class="btn btn-ghost" id="csv">下載 Excel（CSV）</button>
         <button type="button" class="btn btn-ghost" id="phones">複製手機號碼</button>
       </div>
@@ -230,7 +230,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
   function rowsInView(){
     const q = $("#q").value.trim().toLowerCase().replace(/-/g, "");
     return DATA.rows.filter(r => (FILTER === "all" || r.code === FILTER) &&
-      (!q || [r.name, r.phone, r.lineName].some(s => String(s || "").toLowerCase().includes(q))));
+      (!q || [r.name, r.phone].some(s => String(s || "").toLowerCase().includes(q))));
   }
 
   function render(){
@@ -324,7 +324,6 @@ dialog h3{font-size:20px;margin-bottom:4px}
           admin && FILTER === "all" ? el("span", {className:"cn", textContent:r.cname}) : null),
         el("a", {className:"tel", href:"tel:" + r.phone, textContent:fmtPhone(r.phone)}),
         el("div", {className:"meta"},
-          r.lineName ? el("span", {textContent:"LINE：" + r.lineName}) : null,
           el("span", {textContent:"報名 " + String(r.time).slice(5, 16)}))
       ));
     });
@@ -334,10 +333,10 @@ dialog h3{font-size:20px;margin-bottom:4px}
 
   $("#csv").addEventListener("click", () => {
     const rows = rowsInView();
-    const head = ["報名編號", "社區", "姓名", "性別", "年齡", "手機", "LINE名稱", "報名時間"];
+    const head = ["報名編號", "社區", "姓名", "性別", "年齡", "手機", "報名時間"];
     const esc = v => { v = String(v == null ? "" : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
     // 手機加 ="..." 讓 Excel 保留開頭的 0
-    const lines = [head.join(",")].concat(rows.map(r => [r.no, r.cname, r.name, r.gender, r.age, '="' + r.phone + '"', r.lineName, r.time].map((v, i) => i === 5 ? v : esc(v)).join(",")));
+    const lines = [head.join(",")].concat(rows.map(r => [r.no, r.cname, r.name, r.gender, r.age, '="' + r.phone + '"', r.time].map((v, i) => i === 5 ? v : esc(v)).join(",")));
     const blob = new Blob(["﻿" + lines.join("\r\n")], {type:"text/csv;charset=utf-8"});
     const name = (DATA.role === "admin" && FILTER === "all" ? "全部社區" : (DATA.communities.find(c => c.code === (FILTER === "all" ? DATA.communities[0].code : FILTER)) || {}).name || "報名") +
       "_報名名單_" + new Date().toISOString().slice(0, 10) + ".csv";

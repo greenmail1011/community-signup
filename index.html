@@ -176,11 +176,6 @@ dialog button{margin-top:10px}
       <p class="msg" role="alert"></p>
     </div>
 
-    <div class="field" data-f="lineName">
-      <label for="f-line">LINE 名稱<span class="opt-tag">選填｜方便我們在群組認出你</span></label>
-      <input type="text" id="f-line" name="lineName" maxlength="30" autocomplete="off">
-    </div>
-
     <div class="hp" aria-hidden="true"><label>網站<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
 
     <div class="field" data-f="consent">
@@ -329,7 +324,6 @@ dialog button{margin-top:10px}
       gender: g ? g.value : "",
       age: $("#f-age").value.replace(/[^\d]/g, ""),
       phone: $("#f-phone").value.replace(/[^\d]/g, ""),
-      lineName: $("#f-line").value.trim(),
       consent: $("#f-consent").checked,
       website: form.website.value
     };

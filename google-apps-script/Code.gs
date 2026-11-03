@@ -14,7 +14,7 @@
 const SHEET_CONF = '社區設定';
 const SHEET_DATA = '報名總表';
 const CONF_HEAD = ['社區代碼', '社區名稱', '活動時間', '活動地點', 'LINE群組連結', '社區後台密碼', '開放報名', '名額上限'];
-const DATA_HEAD = ['報名時間', '報名編號', '社區代碼', '社區名稱', '姓名', '性別', '年齡', '手機', 'LINE名稱'];
+const DATA_HEAD = ['報名時間', '報名編號', '社區代碼', '社區名稱', '姓名', '性別', '年齡', '手機'];
 const GENDERS = ['男', '女', '不便透露'];
 const TZ = 'Asia/Taipei';
 const PASS_CHARS = 'abcdefghjkmnpqrstuvwxyz23456789'; // 去掉容易看錯的 i l o 0 1
@@ -145,7 +145,6 @@ function register_(b) {
   const gender = String(b.gender || '').trim();
   const age = Number(String(b.age || '').trim());
   const phone = String(b.phone || '').replace(/[^\d]/g, '');
-  const lineName = clean_(b.lineName, 30);
   const bad = [];
   if (!name) bad.push('name');
   if (GENDERS.indexOf(gender) < 0) bad.push('gender');
@@ -166,7 +165,7 @@ function register_(b) {
 
     const no = mine.reduce(function (m, r) { return Math.max(m, Number(r.no) || 0); }, 0) + 1;
     const now = Utilities.formatDate(new Date(), TZ, 'yyyy/MM/dd HH:mm:ss');
-    const rec = { time: now, no: String(no), code: c.code, cname: c.name, name: name, gender: gender, age: String(age), phone: phone, lineName: lineName };
+    const rec = { time: now, no: String(no), code: c.code, cname: c.name, name: name, gender: gender, age: String(age), phone: phone };
     const h = header_(sh, DATA_HEAD);
     const row = h.map(function (k) { return rec[KEYMAP[k]] !== undefined ? rec[KEYMAP[k]] : ''; });
     sh.getRange(sh.getLastRow() + 1, 1, 1, row.length).setNumberFormat('@').setValues([row]);
@@ -213,14 +212,14 @@ function data_(b) {
       return o;
     }),
     rows: rows.map(function (r) {
-      return { time: r.time, no: r.no, code: r.code, cname: r.cname, name: r.name, gender: r.gender, age: r.age, phone: r.phone, lineName: r.lineName };
+      return { time: r.time, no: r.no, code: r.code, cname: r.cname, name: r.name, gender: r.gender, age: r.age, phone: r.phone };
     })
   };
 }
 
 /* ---------------- 工具 ---------------- */
 
-const KEYMAP = { '報名時間': 'time', '報名編號': 'no', '社區代碼': 'code', '社區名稱': 'cname', '姓名': 'name', '性別': 'gender', '年齡': 'age', '手機': 'phone', 'LINE名稱': 'lineName' };
+const KEYMAP = { '報名時間': 'time', '報名編號': 'no', '社區代碼': 'code', '社區名稱': 'cname', '姓名': 'name', '性別': 'gender', '年齡': 'age', '手機': 'phone' };
 
 function ss_() {
   let ss = null;
