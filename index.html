@@ -30,7 +30,6 @@ if(c){var l=document.createElement("link");l.rel="preload";l.as="image";l.href="
   --white:#FFFFFF;
   --line:#04913D; --line-deep:#03702F;
   --err:#C0261B;
-  --checker:repeating-conic-gradient(var(--blue) 0 25%, var(--white) 0 50%) 0 0 / 18px 18px; /* 每格 9px，兩排 = 18px */
   --f-round:"Huninn","Noto Sans TC",system-ui,sans-serif;
   --f-body:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
   color-scheme:light;
@@ -49,9 +48,8 @@ h1,h2,h3,.btn,.kicker,.comm b,.top-in #org,footer a,.done-no{-webkit-text-stroke
 p{margin:0;text-wrap:pretty}
 .wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
 
-/* 頂端：棋盤格帶 + 白色資訊列 */
-.top{margin:0 calc(-1 * max(14px,env(safe-area-inset-left,0px)));background:var(--white);box-shadow:0 1px 0 var(--blue-soft)}
-.top::before{content:"";display:block;height:18px;background:var(--checker)}
+/* 頂端：白色資訊列 */
+.top{margin:0 calc(-1 * max(14px,env(safe-area-inset-left,0px)));background:var(--white);border-top:6px solid var(--blue);box-shadow:0 1px 0 var(--blue-soft)}
 .top-in{max-width:640px;margin:0 auto;padding:10px max(14px,env(safe-area-inset-left,0px));display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .top-in #org{font-family:var(--f-round);font-size:18px;color:var(--ink)}
 @media (max-width:520px){.top-in{justify-content:center;text-align:center;gap:6px 10px}}
@@ -71,10 +69,9 @@ p{margin:0;text-wrap:pretty}
 .poster+.hero{margin-top:0}
 .hero.has-poster{display:none} /* 海報已經有標題、時間、地點，就不重複顯示 */
 
-/* 報名卡：上緣棋盤格（射門圈的格紋） */
-.card{position:relative;background:var(--white);border-radius:24px;padding:40px 18px 26px;display:flex;flex-direction:column;gap:26px;overflow:hidden;
+/* 報名卡 */
+.card{position:relative;background:var(--white);border-radius:24px;padding:28px 18px 26px;display:flex;flex-direction:column;gap:26px;overflow:hidden;
   box-shadow:0 10px 30px -18px rgba(14,42,94,.5)}
-.card::before{content:"";position:absolute;left:0;right:0;top:0;height:18px;background:var(--checker)}
 .card h2{font-size:31px;letter-spacing:.06em;color:var(--ink)}
 .muted{color:var(--ink-2);font-size:19px}
 .field{display:flex;flex-direction:column;gap:8px;border:0;margin:0;padding:0;min-width:0}
@@ -117,7 +114,7 @@ input:focus,select:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 
 .form-err{background:#FDECEA;color:var(--err);border:3px solid #F3B3AC;border-radius:16px;padding:14px 16px;font-weight:900;font-size:20px}
 
 /* states */
-.state{text-align:center;padding:48px 18px}
+.state{text-align:center;padding:48px 18px;margin-top:18px}
 .state h2{margin-bottom:8px}
 .spinner{width:48px;height:48px;margin:0 auto 12px;border-radius:50%;border:6px solid var(--blue-soft);border-top-color:var(--ring);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -137,13 +134,6 @@ input:focus,select:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 
 .qr{width:150px;height:150px;flex:0 0 150px;background:var(--white);padding:8px;border-radius:12px}
 .qr svg{width:100%;height:100%;display:block}
 @media (min-width:760px){.qr-wrap{display:flex}}
-
-/* 選社區 */
-.comm-list{display:grid;gap:12px}
-.comm{display:flex;flex-direction:column;gap:4px;padding:18px 20px;border:3px solid var(--blue-soft);border-radius:18px;background:var(--white);text-decoration:none;color:inherit}
-.comm b{font-family:var(--f-round);font-weight:400;font-size:27px;color:var(--ink)}
-.comm span{color:var(--ink-2);font-size:19px;font-weight:700}
-.comm:hover{border-color:var(--blue)}
 
 footer{text-align:center;color:var(--ink-2);font-size:18px;font-weight:700;display:flex;flex-direction:column;gap:4px;padding-top:8px}
 footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--ring-deep);font-variant-numeric:tabular-nums}
@@ -168,11 +158,6 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
   <section class="card state" id="loading"><div class="spinner" aria-hidden="true"></div><p>載入中…</p></section>
   <section class="card state" id="error" hidden><h2 id="err-title">找不到這個報名頁</h2><p class="muted" id="err-text"></p></section>
 
-  <!-- 沒帶社區代碼：選社區 -->
-  <section class="card" id="pick" hidden>
-    <h2>請選擇你的社區</h2>
-    <div class="comm-list" id="comm-list"></div>
-  </section>
 
   <!-- 報名表 -->
   <form class="card" id="form" novalidate hidden>
@@ -271,7 +256,7 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
   $("#subtitle").textContent = CFG.EVENT_SUBTITLE || "";
 
   function fail(title, text){
-    show("#loading", false); show("#form", false); show("#pick", false);
+    show("#loading", false); show("#form", false);
     $("#err-title").textContent = title; $("#err-text").textContent = text || ""; show("#error", true);
   }
 
@@ -309,16 +294,6 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
   }
 
   const LOCAL = CFG.COMMUNITIES || {};
-  function renderPick(list){
-    const box = $("#comm-list"); box.innerHTML = "";
-    list.forEach(c => {
-      const a = document.createElement("a"); a.className = "comm"; a.href = "?c=" + encodeURIComponent(c.code);
-      a.append(Object.assign(document.createElement("b"), {textContent:c.name}),
-               Object.assign(document.createElement("span"), {textContent:[c.time, c.place].filter(Boolean).join("｜")}));
-      box.append(a);
-    });
-    show("#loading", false); show("#pick", true);
-  }
   function applyStatus(c){
     if (!c.open) { fail("這場活動已經截止報名", "謝謝你的關注！如有問題請來電洽詢。"); return false; }
     if (c.full) { fail("這場活動名額已滿", "謝謝你的關注！如想候補請來電洽詢。"); return false; }
@@ -330,22 +305,17 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
     const code = (new URLSearchParams(location.search).get("c") || "").trim().toLowerCase();
     const local = code && LOCAL[code] ? Object.assign({code:code, open:true, full:false, line:""}, LOCAL[code]) : null;
 
+    // 沒有社區代碼：不列出其他社區，只請對方用社區給的連結
+    if (!code) return fail("請用社區給你的報名連結", "每個社區都有自己的報名網址，請向社區或主辦單位索取。");
+
     // 1) 先用 config.js 的資料立刻顯示，不等 Google
-    if (!code && Object.keys(LOCAL).length) renderPick(Object.keys(LOCAL).map(k => Object.assign({code:k}, LOCAL[k])));
     if (local) { community = local; renderHero(community); show("#loading", false); show("#form", true); }
 
     // 2) 背景向 Google 確認最新狀態（同時把 Google 端喚醒，送出報名會比較快）
     try {
-      if (!code) {
-        const r = await apiGet({action:"communities"});
-        if (!r.ok) throw new Error(r.error);
-        if (!r.communities.length) return fail("目前沒有開放報名的活動", "");
-        renderPick(r.communities);
-        return;
-      }
       const r = await apiGet({action:"community", code:code});
       if (!r.ok) {
-        if (r.error === "no_community") return fail("找不到這個報名頁", "網址可能不完整，請向社區或主辦單位索取正確的報名連結。");
+        if (r.error === "no_community") return fail("請用社區給你的報名連結", "這個網址可能不完整。每個社區都有自己的報名網址，請向社區或主辦單位索取。");
         throw new Error(r.error);
       }
       const doneShown = !$("#done").hidden;
@@ -355,7 +325,7 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
       if (!applyStatus(community)) return;
       show("#loading", false); show("#form", true);
     } catch (e) {
-      if (!local && !(!code && Object.keys(LOCAL).length)) fail("網路好像不太穩", "請稍後重新整理這個頁面再試一次。");
+      if (!local) fail("網路好像不太穩", "請稍後重新整理這個頁面再試一次。");
     }
   }
 

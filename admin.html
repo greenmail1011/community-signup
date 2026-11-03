@@ -10,11 +10,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
 <style>
 :root{
-  /* 與報名頁同一套：天空藍、寶藍、射門圈橘、棋盤格 */
+  /* 與報名頁同一套：天空藍、寶藍、射門圈橘 */
   --bg:#EAF4FF; --panel:#FFFFFF; --soft:#FFF5CC; --sky:#EAF4FF;
   --text:#0E2A5E; --muted:#3A4D73; --border:#C9DCF7;
   --blue:#1F5FD1; --orange:#C24F00; --ring:#F26B0F; --line:#04913D; --err:#C0261B; --ok:#15803D;
-  --checker:repeating-conic-gradient(#1F5FD1 0 25%, #FFFFFF 0 50%) 0 0 / 14px 14px;
   --f:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
   color-scheme:light;
 }
@@ -29,8 +28,8 @@ p{margin:0}
 .num{font-variant-numeric:tabular-nums}
 .wrap{max-width:980px;margin:0 auto;padding-top:18px;display:flex;flex-direction:column;gap:18px}
 
-.top{margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:24px max(16px,env(safe-area-inset-left,0px)) 10px;color:#FFFFFF;position:sticky;top:0;z-index:5;
-  background:repeating-conic-gradient(#1F5FD1 0 25%, #FFFFFF 0 50%) 0 0 / 14px 14px repeat-x, var(--text)}
+.top{margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:10px max(16px,env(safe-area-inset-left,0px));color:#FFFFFF;position:sticky;top:0;z-index:5;
+  background:var(--text);border-top:6px solid var(--blue)}
 .top-in{max-width:980px;margin:0 auto;display:flex;align-items:center;gap:8px}
 .top h1{font-size:17px;font-weight:900;letter-spacing:.04em;white-space:nowrap}
 .role{font-size:13px;font-weight:700;background:#FFD43B;color:var(--text);border-radius:999px;padding:1px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
