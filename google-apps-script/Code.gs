@@ -21,6 +21,12 @@ const PASS_CHARS = 'abcdefghjkmnpqrstuvwxyz23456789'; // 去掉容易看錯的 i
 const MAX_FAILS = 30;      // 10 分鐘內密碼錯幾次就暫停登入
 const FAIL_WINDOW = 600;   // 秒
 
+// 管理者 Google 登入（後台「用 Google 帳號登入」）
+// 用戶端 ID：Google Cloud 專案 hsinchu-drone →「Google Auth Platform → 用戶端 → 社區報名後台 Google 登入」
+const GOOGLE_CLIENT_ID = '944428960229-mr558fj6iq5vkccft3mpnm5uf484m6cb.apps.googleusercontent.com';
+// 可以用 Google 登入當管理者的帳號（要改名單：改這裡後重新部署；或在指令碼屬性加 ADMIN_EMAILS，用逗號分隔，會蓋過這裡）
+const ADMIN_EMAILS = ['greenmail1011@gmail.com', 'tomycbf@gmail.com', 'tomy@fzt.cc', 'zikai2000@gmail.com'];
+
 /* ---------------- 試算表選單 ---------------- */
 
 function onOpen() {
@@ -141,6 +147,7 @@ function feed_(key) {
 
 // POST {action:'register', ...}  → 報名
 // POST {action:'data', key}      → 後台資料（依密碼決定看得到哪些社區）
+// POST {action:'data', idToken}  → 後台資料（管理者用 Google 帳號登入）
 function doPost(e) {
   try {
     const body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
@@ -194,14 +201,25 @@ function register_(b) {
 
 function data_(b) {
   const cache = CacheService.getScriptCache();
+  const all = communities_();
+  let role, codes, who = '';
+
+  if (b.idToken) {
+    // Google 登入：向 Google 驗證這張登入憑證，再比對管理者名單
+    const g = googleEmail_(String(b.idToken));
+    if (!g) return { ok: false, error: 'google_invalid' };
+    if (adminEmails_().indexOf(g) < 0) return { ok: false, error: 'not_admin', email: g };
+    role = 'admin'; who = g;
+  }
+
   const fails = Number(cache.get('fails') || 0);
-  if (fails >= MAX_FAILS) return { ok: false, error: 'locked' };
+  if (!role && fails >= MAX_FAILS) return { ok: false, error: 'locked' };
 
   const key = String(b.key || '').trim();
   const admin = PropertiesService.getScriptProperties().getProperty('ADMIN_KEY');
-  const all = communities_();
-  let role, codes;
-  if (key && admin && key === admin) {
+  if (role) {
+    // 已用 Google 登入
+  } else if (key && admin && key === admin) {
     role = 'admin';
   } else if (key) {
     codes = all.filter(function (c) { return c.pass && c.pass === key; }).map(function (c) { return c.code; });
@@ -230,6 +248,7 @@ function data_(b) {
   return {
     ok: true,
     role: role,
+    who: who, // Google 登入時的帳號
     sheet: sheet, // 只有管理者拿得到試算表連結
     communities: comms.map(function (c) {
       const o = { code: c.code, name: c.name, time: c.time, place: c.place, line: c.line, open: c.open, cap: c.cap, count: count[c.code] || 0 };
@@ -240,6 +259,40 @@ function data_(b) {
       return { time: r.time, no: r.no, code: r.code, cname: r.cname, name: r.name, gender: r.gender, age: r.age, phone: r.phone };
     })
   };
+}
+
+/** 管理者 Google 帳號名單（小寫） */
+function adminEmails_() {
+  const p = PropertiesService.getScriptProperties().getProperty('ADMIN_EMAILS');
+  const list = p ? p.split(/[,，\s]+/) : ADMIN_EMAILS;
+  return list.map(function (s) { return String(s).trim().toLowerCase(); }).filter(String);
+}
+
+/**
+ * 驗證 Google 登入憑證（ID token），成功回傳 email（小寫），失敗回傳 null。
+ * 由 Google 的 tokeninfo 檢查簽章與有效期限；這裡再確認是發給本系統的、email 已驗證。
+ * 同一張憑證 10 分鐘內不重複查。
+ */
+function googleEmail_(tok) {
+  if (!tok || tok.length > 4096) return null;
+  const cache = CacheService.getScriptCache();
+  const ck = 'gid_' + Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, tok));
+  const hit = cache.get(ck);
+  if (hit) return hit === '-' ? null : hit;
+  let email = null;
+  try {
+    const r = UrlFetchApp.fetch('https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(tok), { muteHttpExceptions: true });
+    if (r.getResponseCode() === 200) {
+      const j = JSON.parse(r.getContentText());
+      const okIss = j.iss === 'accounts.google.com' || j.iss === 'https://accounts.google.com';
+      const okExp = Number(j.exp) * 1000 > Date.now();
+      if (j.aud === GOOGLE_CLIENT_ID && okIss && okExp && String(j.email_verified) === 'true' && j.email) {
+        email = String(j.email).toLowerCase();
+      }
+    }
+  } catch (err) { return null; } // 網路問題不要記住
+  cache.put(ck, email || '-', 600);
+  return email;
 }
 
 /**

@@ -11,6 +11,9 @@ window.APP_CONFIG = {
   ORG_NAME: "新竹市無人機創新科技協會",
   ORG_PHONE: "03-540-3463",
 
+  // 管理者 Google 登入的用戶端 ID（Google Cloud 專案 hsinchu-drone）。誰能當管理者在 Code.gs 的 ADMIN_EMAILS 設定。
+  GOOGLE_CLIENT_ID: "944428960229-mr558fj6iq5vkccft3mpnm5uf484m6cb.apps.googleusercontent.com",
+
   // 各社區活動資料：報名頁會「立刻」用這裡的資料顯示，不必等 Google 回應（約 2～5 秒）。
   // 背景仍會向 Google 試算表確認；試算表「社區設定」改了時間地點、截止或額滿，載入後會自動更新。
   // 新增社區時兩邊都加，網頁才會一打開就出現。line 是 LINE 群組邀請連結（試算表沒填時用這裡的）。

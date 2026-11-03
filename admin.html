@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<script src="https://accounts.google.com/gsi/client" async></script>
 <style>
 :root{
   /* 與報名頁同一套：天空藍、寶藍、射門圈橘 */
@@ -54,6 +55,10 @@ input:focus{border-color:var(--blue);outline:none}
 .btn-sheet:hover{background:#136C2E}
 .btn-sheet::before{content:"";width:14px;height:16px;border-radius:2px;background:#FFFFFF;box-shadow:inset 0 -5px 0 #A8DAB5,inset 0 -10px 0 #FFFFFF,inset 0 -11px 0 #A8DAB5;flex:0 0 auto}
 .err{color:var(--err);font-weight:700}
+.g-box{display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}
+.g-btn{min-height:44px;display:flex;justify-content:center}
+.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-weight:700;margin:6px 0}
+.or::before,.or::after{content:"";flex:1;border-top:2px dashed var(--border)}
 
 /* stats */
 .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
@@ -115,7 +120,13 @@ dialog h3{font-size:20px;margin-bottom:4px}
 
   <form class="card login" id="login">
     <h2>登入報名後台</h2>
-    <p class="muted">社區負責人請輸入你們社區的後台密碼，只會看到自己社區的報名資料。</p>
+    <div class="g-box">
+      <p class="muted"><b>管理者</b>請用 Google 帳號登入</p>
+      <div class="g-btn" id="g-btn"><span class="muted">Google 登入按鈕載入中…</span></div>
+      <p class="err" id="g-err" role="alert" hidden></p>
+    </div>
+    <div class="or">社區負責人</div>
+    <p class="muted">請輸入你們社區的後台密碼，只會看到自己社區的報名資料。</p>
     <label for="key" class="muted" style="font-weight:700">密碼</label>
     <input type="password" id="key" autocomplete="current-password" autocapitalize="off" spellcheck="false">
     <p class="err" id="login-err" role="alert" hidden></p>
@@ -162,7 +173,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
   </div>
 </dialog>
 
-<script src="config.js?v=4"></script>
+<script src="config.js?v=5"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (function(){
@@ -172,11 +183,12 @@ dialog h3{font-size:20px;margin-bottom:4px}
   const el = (tag, props, ...kids) => { const e = Object.assign(document.createElement(tag), props || {}); kids.forEach(k => k != null && e.append(k)); return e; };
   const SKEY = "community-signup-key";
   const ss = {
-    get(){ try { return sessionStorage.getItem(SKEY) || ""; } catch(e) { return ""; } },
-    set(v){ try { sessionStorage.setItem(SKEY, v); } catch(e) {} },
+    // 存 {key:"密碼"} 或 {idToken:"Google 登入憑證"}；舊版只存密碼字串
+    get(){ try { const v = sessionStorage.getItem(SKEY) || ""; if (!v) return null; try { const o = JSON.parse(v); if (o && typeof o === "object") return o; } catch(_) {} return {key:v}; } catch(e) { return null; } },
+    set(v){ try { sessionStorage.setItem(SKEY, JSON.stringify(v)); } catch(e) {} },
     del(){ try { sessionStorage.removeItem(SKEY); } catch(e) {} }
   };
-  let KEY = "", DATA = null, FILTER = "all";
+  let CRED = null, DATA = null, FILTER = "all";
 
   function toast(t){
     const d = el("div", {className:"toast", textContent:t}); document.body.append(d);
@@ -194,41 +206,85 @@ dialog h3{font-size:20px;margin-bottom:4px}
   const adminUrl = () => new URL("admin.html", location.href).href;
   const fmtPhone = p => /^09\d{8}$/.test(p) ? p.slice(0,4) + "-" + p.slice(4,7) + "-" + p.slice(7) : p;
 
-  async function load(key){
-    const r = await fetch(API, {method:"POST", body: JSON.stringify({action:"data", key}), credentials:"omit"});
+  async function load(cred){
+    const r = await fetch(API, {method:"POST", body: JSON.stringify(Object.assign({action:"data"}, cred)), credentials:"omit"});
     return r.json();
   }
 
-  async function login(key, silent){
-    const err = $("#login-err"); err.hidden = true;
+  function errText(r){
+    return r.error === "wrong_key" ? "密碼不對，請再確認一次"
+      : r.error === "locked" ? "錯誤次數太多，請 10 分鐘後再試"
+      : r.error === "not_admin" ? "這個 Google 帳號（" + (r.email || "") + "）不在管理者名單裡。社區負責人請用下面的社區密碼登入。"
+      : r.error === "google_invalid" ? "Google 登入已過期，請再按一次「使用 Google 帳戶登入」"
+      : "讀取失敗，請稍後再試";
+  }
+
+  async function login(cred, silent){
+    const google = !!cred.idToken;
+    const err = google ? $("#g-err") : $("#login-err");
+    $("#g-err").hidden = true; $("#login-err").hidden = true;
     if (!API) { err.textContent = "尚未設定 API 網址（config.js 的 API_URL）"; err.hidden = false; return; }
-    const btn = $("#login-btn"); btn.disabled = true; btn.textContent = "登入中…";
+    const btn = $("#login-btn");
+    if (google) { err.textContent = "登入中…"; err.hidden = false; err.style.color = "var(--muted)"; }
+    else { btn.disabled = true; btn.textContent = "登入中…"; }
     try {
-      const r = await load(key);
+      const r = await load(cred);
+      err.style.color = "";
       if (!r.ok) {
         ss.del();
-        if (!silent) {
-          err.textContent = r.error === "wrong_key" ? "密碼不對，請再確認一次" : r.error === "locked" ? "錯誤次數太多，請 10 分鐘後再試" : "讀取失敗，請稍後再試";
-          err.hidden = false;
-        }
+        if (!silent) { err.textContent = errText(r); err.hidden = false; } else err.hidden = true;
         return;
       }
-      KEY = key; ss.set(key); DATA = r; DATA.at = new Date();
+      err.hidden = true;
+      CRED = cred; ss.set(cred); DATA = r; DATA.at = new Date();
       $("#login").hidden = true; $("#app").hidden = false;
       $("#refresh").hidden = false; $("#logout").hidden = false;
       render();
     } catch(e) {
-      if (!silent) { err.textContent = "網路連線失敗，請稍後再試"; err.hidden = false; }
+      err.style.color = "";
+      if (!silent) { err.textContent = "網路連線失敗，請稍後再試"; err.hidden = false; } else err.hidden = true;
     } finally {
       btn.disabled = false; btn.textContent = "登入";
     }
   }
 
-  $("#login").addEventListener("submit", e => { e.preventDefault(); const k = $("#key").value.trim(); if (k) login(k); });
-  $("#logout").addEventListener("click", () => { ss.del(); location.reload(); });
+  $("#login").addEventListener("submit", e => { e.preventDefault(); const k = $("#key").value.trim(); if (k) login({key:k}); });
+  $("#logout").addEventListener("click", () => {
+    ss.del();
+    try { if (CRED && CRED.idToken && window.google) google.accounts.id.disableAutoSelect(); } catch(e) {}
+    location.reload();
+  });
+
+  // ---- 管理者 Google 登入（Google Identity Services）----
+  function initGoogle(){
+    const box = $("#g-btn");
+    if (!CFG.GOOGLE_CLIENT_ID) { box.parentElement.hidden = true; return; }
+    let tries = 0;
+    (function wait(){
+      if (window.google && google.accounts && google.accounts.id) {
+        google.accounts.id.initialize({
+          client_id: CFG.GOOGLE_CLIENT_ID,
+          callback: resp => { if (resp && resp.credential) login({idToken: resp.credential}); },
+          ux_mode: "popup", auto_select: false, cancel_on_tap_outside: true
+        });
+        box.innerHTML = "";
+        google.accounts.id.renderButton(box, {type:"standard", theme:"filled_blue", size:"large", shape:"pill", text:"signin_with", locale:"zh-TW", width: 280});
+      } else if (++tries < 60) setTimeout(wait, 250);
+      else box.innerHTML = '<span class="muted">Google 登入載入失敗，請重新整理頁面</span>';
+    })();
+  }
+  initGoogle();
   $("#refresh").addEventListener("click", async () => {
     const b = $("#refresh"); b.disabled = true; b.textContent = "更新中…";
-    try { const r = await load(KEY); if (r.ok) { DATA = r; DATA.at = new Date(); render(); toast("已更新"); } else toast("更新失敗"); }
+    try {
+      const r = await load(CRED);
+      if (r.ok) { DATA = r; DATA.at = new Date(); render(); toast("已更新"); }
+      else if (r.error === "google_invalid") {
+        ss.del(); $("#app").hidden = true; $("#login").hidden = false;
+        $("#refresh").hidden = true; $("#logout").hidden = true; $("#role").hidden = true;
+        $("#g-err").textContent = errText(r); $("#g-err").hidden = false;
+      } else toast("更新失敗");
+    }
     catch(e) { toast("網路連線失敗"); }
     b.disabled = false; b.textContent = "更新";
   });
@@ -242,7 +298,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
   function render(){
     const admin = DATA.role === "admin";
     const role = $("#role"); role.hidden = false;
-    role.textContent = admin ? "管理者｜全部社區" : DATA.communities.map(c => c.name).join("、");
+    role.textContent = admin ? "管理者｜全部社區" + (DATA.who ? "（" + DATA.who + "）" : "") : DATA.communities.map(c => c.name).join("、");
     document.title = "報名後台｜" + role.textContent;
 
     // 社區卡片（管理者）
@@ -388,7 +444,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
   dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
 
   const saved = ss.get();
-  if (saved) login(saved, true);
+  if (saved && (saved.key || saved.idToken)) login(saved, true);
 })();
 </script>
 </body>
