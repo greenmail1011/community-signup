@@ -206,8 +206,9 @@ function data_(b) {
 
   if (b.idToken) {
     // Google 登入：向 Google 驗證這張登入憑證，再比對管理者名單
-    const g = googleEmail_(String(b.idToken));
-    if (!g) return { ok: false, error: 'google_invalid' };
+    const why = {};
+    const g = googleEmail_(String(b.idToken), why);
+    if (!g) return { ok: false, error: 'google_invalid', detail: why.reason || '' };
     if (adminEmails_().indexOf(g) < 0) return { ok: false, error: 'not_admin', email: g };
     role = 'admin'; who = g;
   }
@@ -273,12 +274,13 @@ function adminEmails_() {
  * 由 Google 的 tokeninfo 檢查簽章與有效期限；這裡再確認是發給本系統的、email 已驗證。
  * 同一張憑證 10 分鐘內不重複查。
  */
-function googleEmail_(tok) {
-  if (!tok || tok.length > 4096) return null;
+function googleEmail_(tok, why) {
+  why = why || {};
+  if (!tok || tok.length > 4096) { why.reason = 'empty'; return null; }
   const cache = CacheService.getScriptCache();
   const ck = 'gid_' + Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, tok));
   const hit = cache.get(ck);
-  if (hit) return hit === '-' ? null : hit;
+  if (hit) { if (hit === '-') why.reason = 'cached_invalid'; return hit === '-' ? null : hit; }
   let email = null;
   try {
     const r = UrlFetchApp.fetch('https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(tok), { muteHttpExceptions: true });
@@ -286,11 +288,15 @@ function googleEmail_(tok) {
       const j = JSON.parse(r.getContentText());
       const okIss = j.iss === 'accounts.google.com' || j.iss === 'https://accounts.google.com';
       const okExp = Number(j.exp) * 1000 > Date.now();
-      if (j.aud === GOOGLE_CLIENT_ID && okIss && okExp && String(j.email_verified) === 'true' && j.email) {
-        email = String(j.email).toLowerCase();
-      }
+      if (j.aud !== GOOGLE_CLIENT_ID) why.reason = 'aud';
+      else if (!okIss) why.reason = 'iss';
+      else if (!okExp) why.reason = 'exp';
+      else if (String(j.email_verified) !== 'true' || !j.email) why.reason = 'email_unverified';
+      else email = String(j.email).toLowerCase();
+    } else {
+      why.reason = 'tokeninfo_' + r.getResponseCode();
     }
-  } catch (err) { return null; } // 網路問題不要記住
+  } catch (err) { why.reason = 'fetch: ' + String(err).slice(0, 160); return null; } // 網路問題不要記住
   cache.put(ck, email || '-', 600);
   return email;
 }
