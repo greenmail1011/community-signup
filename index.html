@@ -7,7 +7,7 @@
 <meta name="description" content="青銀無人機體驗課程線上報名，填寫姓名、性別、年齡、手機，報名後加入社區 LINE 群組。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@500;700;900&display=swap">
 <link rel="preconnect" href="https://script.google.com">
 <link rel="preconnect" href="https://script.googleusercontent.com">
 <script>
@@ -17,117 +17,136 @@ if(c){var l=document.createElement("link");l.rel="preload";l.as="image";l.href="
 </script>
 <style>
 :root{
-  --bg:#FFF8EE; --panel:#FFFFFF; --soft:#FFF0DC; --sky:#EAF3FF;
-  --text:#14284B; --muted:#3D4A60; --border:#E6CFAF; --input:#A8916F;
-  --blue:#1E56B0; --orange:#C94F06; --orange-hover:#B04404; --sun:#FFC83D;
-  --line:#048A3A; --line-hover:#03732F; --err:#B42318; --ok:#15803D;
-  --f:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+  /* 取自海報：天空藍底、標題寶藍、射門圈亮橘與藍白棋盤格、陽光黃 */
+  --sky:#EAF4FF;      /* 頁面底色 */
+  --ink:#0E2A5E;      /* 主要文字（海報「青銀」寶藍） */
+  --ink-2:#3A4D73;    /* 次要文字 */
+  --blue:#1F5FD1;     /* 棋盤格藍、選取狀態 */
+  --blue-soft:#C9DCF7;/* 輸入框框線 */
+  --ring:#F26B0F;     /* 射門圈橘（主按鈕） */
+  --ring-deep:#C24F00;
+  --sun:#FFD43B;      /* 點綴 */
+  --sun-soft:#FFF5CC;
+  --white:#FFFFFF;
+  --line:#04913D; --line-deep:#03702F;
+  --err:#C0261B;
+  --checker:repeating-conic-gradient(var(--blue) 0 25%, var(--white) 0 50%) 0 0 / 18px 18px; /* 每格 9px，兩排 = 18px */
+  --f-round:"Huninn","Noto Sans TC",system-ui,sans-serif;
+  --f-body:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
   color-scheme:light;
 }
 /* 樂齡友善：字大、對比高、按鈕大、間距寬 */
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--text);font-family:var(--f);font-size:20px;line-height:1.7;font-weight:500;
+body{margin:0;background:var(--sky);color:var(--ink);font-family:var(--f-body);font-size:20px;line-height:1.7;font-weight:500;
   padding:0 max(14px,env(safe-area-inset-right,0px)) 56px max(14px,env(safe-area-inset-left,0px))}
 a{color:var(--blue)}
-:focus-visible{outline:4px solid var(--blue);outline-offset:3px;border-radius:6px}
-h1,h2,h3{margin:0;line-height:1.35;text-wrap:balance}
+:focus-visible{outline:4px solid var(--sun);outline-offset:3px;border-radius:8px}
+h1,h2,h3{margin:0;line-height:1.35;text-wrap:balance;font-family:var(--f-round);font-weight:400}
+/* 粉圓只有一種粗細，加一點描邊讓筆畫更清楚 */
+h1,h2,h3,.btn,.kicker,.comm b,.top-in #org,footer a,.done-no{-webkit-text-stroke:.7px currentColor}
 p{margin:0;text-wrap:pretty}
 .wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
 
-.top{margin:0 calc(-1 * max(14px,env(safe-area-inset-left,0px)));padding:12px max(14px,env(safe-area-inset-left,0px));
-  background:var(--text);color:#FFFFFF}
-.top-in{max-width:640px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:17px;font-weight:700;flex-wrap:wrap}
-.top-in .tel{color:var(--sun);text-decoration:none;white-space:nowrap;font-variant-numeric:tabular-nums;font-size:19px}
+/* 頂端：棋盤格帶 + 白色資訊列 */
+.top{margin:0 calc(-1 * max(14px,env(safe-area-inset-left,0px)));background:var(--white);box-shadow:0 1px 0 var(--blue-soft)}
+.top::before{content:"";display:block;height:18px;background:var(--checker)}
+.top-in{max-width:640px;margin:0 auto;padding:10px max(14px,env(safe-area-inset-left,0px));display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.top-in #org{font-family:var(--f-round);font-size:18px;color:var(--ink)}
+@media (max-width:520px){.top-in{justify-content:center;text-align:center;gap:6px 10px}}
+.top-in .tel{display:inline-flex;align-items:center;gap:6px;color:var(--ring-deep);background:var(--white);border:2px solid var(--ring);border-radius:999px;padding:2px 14px;text-decoration:none;white-space:nowrap;font-weight:700;font-size:18px;font-variant-numeric:tabular-nums}
 
 /* hero（沒有海報時才顯示） */
-.hero{margin-top:18px;border-radius:20px;background:var(--sky);border:2px solid #CFE0FA;padding:22px 18px;display:flex;flex-direction:column;gap:14px}
-.kicker{align-self:flex-start;background:var(--sun);color:var(--text);font-weight:900;font-size:18px;border-radius:999px;padding:3px 16px}
-.hero h1{font-size:clamp(38px,11vw,50px);font-weight:900;letter-spacing:.06em;color:var(--blue)}
-.hero h1 b{color:var(--orange)}
-.sub{font-weight:700;font-size:22px}
-.info{display:grid;gap:10px;margin:4px 0 0;padding:16px;background:var(--panel);border-radius:14px}
+.hero{margin-top:18px;border-radius:24px;background:var(--white);padding:22px 18px;display:flex;flex-direction:column;gap:14px}
+.kicker{align-self:flex-start;background:var(--sun);color:var(--ink);font-family:var(--f-round);font-size:19px;border-radius:999px;padding:2px 16px}
+.hero h1{font-size:clamp(40px,12vw,54px);letter-spacing:.06em;color:var(--blue)}
+.hero h1 b{color:var(--ring);font-weight:400}
+.sub{font-family:var(--f-round);font-size:22px}
+.info{display:grid;gap:10px;margin:4px 0 0;padding:16px;background:var(--sky);border-radius:16px}
 .info div{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:baseline}
-.info dt{font-size:18px;font-weight:700;color:var(--muted)}
-.info dd{margin:0;font-weight:900;font-size:21px}
-.poster{display:block;width:100%;height:auto;border-radius:16px;margin-top:16px;box-shadow:0 2px 10px rgba(20,40,75,.12);background:var(--soft)}
+.info dt{font-size:18px;font-weight:700;color:var(--ink-2)}
+.info dd{margin:0;font-weight:700;font-size:21px}
+.poster{display:block;width:100%;height:auto;border-radius:22px;margin-top:16px;border:4px solid var(--white);box-shadow:0 10px 24px -12px rgba(14,42,94,.45);background:var(--white)}
 .poster+.hero{margin-top:0}
 .hero.has-poster{display:none} /* 海報已經有標題、時間、地點，就不重複顯示 */
 
-/* card */
-.card{background:var(--panel);border:2px solid var(--border);border-radius:20px;padding:24px 18px;display:flex;flex-direction:column;gap:24px}
-.card h2{font-size:29px;font-weight:900;letter-spacing:.04em}
-.muted{color:var(--muted);font-size:19px}
+/* 報名卡：上緣棋盤格（射門圈的格紋） */
+.card{position:relative;background:var(--white);border-radius:24px;padding:40px 18px 26px;display:flex;flex-direction:column;gap:26px;overflow:hidden;
+  box-shadow:0 10px 30px -18px rgba(14,42,94,.5)}
+.card::before{content:"";position:absolute;left:0;right:0;top:0;height:18px;background:var(--checker)}
+.card h2{font-size:31px;letter-spacing:.06em;color:var(--ink)}
+.muted{color:var(--ink-2);font-size:19px}
 .field{display:flex;flex-direction:column;gap:8px;border:0;margin:0;padding:0;min-width:0}
-.field>label,.field legend{font-weight:900;font-size:25px;padding:0;letter-spacing:.04em}
-.field .hint{font-size:18px;font-weight:700;color:var(--muted);margin-left:8px;letter-spacing:0}
-.req{color:var(--orange);margin-left:4px}
-input[type=text],input[type=tel],select{width:100%;font:inherit;font-size:26px;font-weight:700;color:var(--text);background:#FFFFFF;
-  border:3px solid var(--input);border-radius:14px;padding:12px 16px;min-height:68px;letter-spacing:.03em}
-input::placeholder{color:#8A93A3;font-weight:500}
-input:focus,select:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 4px #BFD5F7}
+.field>label,.field legend{font-weight:900;font-size:25px;padding:0;letter-spacing:.06em;color:var(--ink)}
+.field .hint{font-size:18px;font-weight:700;color:var(--ink-2);margin-left:10px;letter-spacing:0}
+.req{color:var(--ring);margin-left:4px}
+input[type=text],input[type=tel],select{width:100%;font:inherit;font-size:26px;font-weight:700;color:var(--ink);background:var(--white);
+  border:3px solid var(--blue-soft);border-radius:16px;padding:12px 16px;min-height:68px;letter-spacing:.03em}
+input::placeholder{color:#8B9AB6;font-weight:500}
+input:focus,select:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 5px rgba(31,95,209,.18)}
 .field.bad input{border-color:var(--err)}
 .msg{color:var(--err);font-size:19px;font-weight:900;min-height:0}
 .msg:empty{display:none}
-.pills{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pills{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .pill:nth-child(3){grid-column:1 / -1}
 .pill{position:relative}
 .pill input{position:absolute;opacity:0;inset:0;margin:0;pointer-events:none}
-.pill span{display:flex;align-items:center;justify-content:center;min-height:68px;border:3px solid var(--input);border-radius:14px;font-weight:900;font-size:25px;cursor:pointer;background:#FFFFFF;text-align:center;line-height:1.15;padding:4px}
-.pill input:checked+span{border-color:var(--blue);background:var(--blue);color:#FFFFFF}
-.pill input:checked+span::before{content:"✓ ";}
-.pill input:focus-visible+span{outline:4px solid var(--blue);outline-offset:3px}
+.pill span{display:flex;align-items:center;justify-content:center;gap:8px;min-height:68px;border:3px solid var(--blue-soft);border-radius:16px;font-weight:900;font-size:25px;cursor:pointer;background:var(--white);color:var(--ink);text-align:center;line-height:1.15;padding:4px}
+.pill input:checked+span{border-color:var(--blue);background:var(--blue);color:var(--white)}
+.pill input:checked+span::before{content:"";width:24px;height:24px;border-radius:50%;background:var(--sun) no-repeat center/14px 14px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M2 7.5l3 3 7-7' fill='none' stroke='%230E2A5E' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.pill input:focus-visible+span{outline:4px solid var(--sun);outline-offset:3px}
 .field.bad .pill span{border-color:var(--err)}
 .age-row{display:flex;align-items:center;gap:12px}
 .age-row input{max-width:150px;text-align:center}
 .age-row span{font-weight:900;font-size:25px}
-.consent{display:flex;gap:14px;align-items:flex-start;background:var(--soft);border:2px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;font-size:20px;font-weight:700;line-height:1.6}
+.consent{display:flex;gap:14px;align-items:flex-start;background:var(--sun-soft);border:3px solid #F5DE7A;border-radius:16px;padding:16px;cursor:pointer;font-size:20px;font-weight:700;line-height:1.6}
 .consent input{width:34px;height:34px;flex:0 0 34px;margin:1px 0 0;accent-color:var(--blue)}
 .field.bad .consent{border-color:var(--err)}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:72px;padding:12px 20px;border-radius:16px;border:0;
-  font:inherit;font-size:27px;font-weight:900;letter-spacing:.1em;text-decoration:none;cursor:pointer;width:100%}
-.btn-primary{background:var(--orange);color:#FFFFFF;box-shadow:0 4px 0 #8F3804}
-.btn-primary:hover{background:var(--orange-hover)}
-.btn-primary[disabled]{opacity:.65;cursor:wait}
-.btn-line{background:var(--line);color:#FFFFFF;box-shadow:0 4px 0 #02592A;letter-spacing:.04em;text-align:center;line-height:1.3}
-.btn-line:hover{background:var(--line-hover)}
-.btn-ghost{background:#FFFFFF;color:var(--blue);border:3px solid var(--blue);font-size:22px;min-height:64px;letter-spacing:.06em}
-.form-err{background:#FEECEB;color:var(--err);border:2px solid #F4B4AE;border-radius:14px;padding:14px 16px;font-weight:900;font-size:20px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:74px;padding:12px 20px;border-radius:999px;border:0;
+  font-family:var(--f-round);font-size:29px;letter-spacing:.14em;text-decoration:none;cursor:pointer;width:100%;line-height:1.3;text-align:center}
+.btn-primary{background:var(--ring);color:var(--white);box-shadow:0 6px 0 var(--ring-deep);text-shadow:0 1px 0 rgba(120,40,0,.35)}
+.btn-primary:hover{background:#E35F06}
+.btn-primary:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ring-deep)}
+.btn-primary[disabled]{opacity:.7;cursor:wait}
+.btn-line{background:var(--line);color:var(--white);box-shadow:0 6px 0 var(--line-deep);letter-spacing:.06em}
+.btn-line:hover{background:var(--line-deep)}
+.btn-ghost{background:var(--white);color:var(--blue);border:3px solid var(--blue);font-size:23px;min-height:64px;letter-spacing:.08em}
+.form-err{background:#FDECEA;color:var(--err);border:3px solid #F3B3AC;border-radius:16px;padding:14px 16px;font-weight:900;font-size:20px}
 
 /* states */
-.state{text-align:center;padding:44px 18px}
+.state{text-align:center;padding:48px 18px}
 .state h2{margin-bottom:8px}
-.spinner{width:44px;height:44px;margin:0 auto 12px;border-radius:50%;border:5px solid #E6D6BF;border-top-color:var(--orange);animation:spin 1s linear infinite}
+.spinner{width:48px;height:48px;margin:0 auto 12px;border-radius:50%;border:6px solid var(--blue-soft);border-top-color:var(--ring);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-@media (prefers-reduced-motion:reduce){.spinner{animation:none}}
+@media (prefers-reduced-motion:reduce){.spinner{animation:none}.btn-primary:active{transform:none}}
 
-/* success */
+/* 報名成功：橘色射門圈 */
 .done-head{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
-.done-mark{width:84px;height:84px;border-radius:50%;background:var(--ok);color:#FFFFFF;font-size:48px;font-weight:900;display:flex;align-items:center;justify-content:center}
-.done-head h2{font-size:34px}
+.done-mark{width:96px;height:96px;border-radius:50%;background:var(--white);border:12px solid var(--ring);box-shadow:inset 0 0 0 4px var(--white),inset 0 0 0 10px var(--sky);color:var(--blue);font-size:40px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.done-head h2{font-size:36px;color:var(--ink)}
 .done-head p{font-size:22px;font-weight:700}
-.done-no{font-variant-numeric:tabular-nums;font-weight:900;color:var(--orange);font-size:28px}
-.line-step{background:#EAF7EF;border:3px solid #8FD3A9;border-radius:18px;padding:20px 16px;display:flex;flex-direction:column;gap:14px}
-.line-step h3{font-size:26px;font-weight:900}
+.done-no{font-variant-numeric:tabular-nums;font-family:var(--f-round);color:var(--ring);font-size:30px}
+.line-step{background:#E9F8EF;border:3px solid #9ED9B4;border-radius:20px;padding:20px 16px;display:flex;flex-direction:column;gap:14px}
+.line-step h3{font-size:27px}
 .line-step .big{font-size:20px;font-weight:700}
-.say{background:#FFFFFF;border-radius:12px;padding:12px 14px;font-weight:900;font-size:21px}
+.say{background:var(--white);border-radius:14px;padding:12px 14px;font-weight:900;font-size:21px}
 .qr-wrap{display:none;align-items:center;gap:14px}
-.qr{width:150px;height:150px;flex:0 0 150px;background:#FFFFFF;padding:8px;border-radius:10px}
+.qr{width:150px;height:150px;flex:0 0 150px;background:var(--white);padding:8px;border-radius:12px}
 .qr svg{width:100%;height:100%;display:block}
 @media (min-width:760px){.qr-wrap{display:flex}}
 
-/* select community */
+/* 選社區 */
 .comm-list{display:grid;gap:12px}
-.comm{display:flex;flex-direction:column;gap:4px;padding:18px;border:3px solid var(--input);border-radius:16px;background:#FFFFFF;text-decoration:none;color:inherit}
-.comm b{font-size:25px}
-.comm span{color:var(--muted);font-size:19px;font-weight:700}
+.comm{display:flex;flex-direction:column;gap:4px;padding:18px 20px;border:3px solid var(--blue-soft);border-radius:18px;background:var(--white);text-decoration:none;color:inherit}
+.comm b{font-family:var(--f-round);font-weight:400;font-size:27px;color:var(--ink)}
+.comm span{color:var(--ink-2);font-size:19px;font-weight:700}
 .comm:hover{border-color:var(--blue)}
 
-footer{text-align:center;color:var(--muted);font-size:18px;font-weight:700;display:flex;flex-direction:column;gap:4px;padding-top:8px}
-footer a{font-weight:900;font-size:22px;font-variant-numeric:tabular-nums}
+footer{text-align:center;color:var(--ink-2);font-size:18px;font-weight:700;display:flex;flex-direction:column;gap:4px;padding-top:8px}
+footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--ring-deep);font-variant-numeric:tabular-nums}
 
 </style>
 </head>
