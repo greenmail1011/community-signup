@@ -102,13 +102,13 @@ function resetAdminKey() {
 
 /* ---------------- 網頁 API ---------------- */
 
-// GET ?action=community&c=代碼   → 單一社區的公開資訊
+// GET ?action=community&code=代碼 → 單一社區的公開資訊（注意：Apps Script 保留了參數名 c，不能用）
 // GET ?action=communities        → 開放報名中的社區名稱（沒帶代碼時給報名頁選）
 function doGet(e) {
   try {
     const p = (e && e.parameter) || {};
     if (p.action === 'community') {
-      const c = findCommunity_(p.c);
+      const c = findCommunity_(p.code);
       if (!c) return out_({ ok: false, error: 'no_community' });
       return out_({ ok: true, community: publicInfo_(c) });
     }
@@ -137,7 +137,7 @@ function doPost(e) {
 
 function register_(b) {
   if (b.website) return { ok: true, no: 0 }; // 機器人陷阱欄位，有填就假裝成功
-  const c = findCommunity_(b.c);
+  const c = findCommunity_(b.code || b.c);
   if (!c) return { ok: false, error: 'no_community' };
   if (!c.open) return { ok: false, error: 'closed' };
 

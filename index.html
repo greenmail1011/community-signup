@@ -300,7 +300,7 @@ dialog button{margin-top:10px}
         show("#loading", false); show("#pick", true);
         return;
       }
-      const r = await apiGet({action:"community", c:code});
+      const r = await apiGet({action:"community", code:code});
       if (!r.ok) {
         if (r.error === "no_community") return fail("找不到這個報名頁", "網址可能不完整，請向社區或主辦單位索取正確的報名連結。");
         throw new Error(r.error);
@@ -368,7 +368,7 @@ dialog button{margin-top:10px}
     }
     const btn = $("#submit"); btn.disabled = true; btn.textContent = "送出中…";
     try {
-      const r = await apiPost(Object.assign({action:"register", c: community.code}, v));
+      const r = await apiPost(Object.assign({action:"register", code: community.code}, v));
       if (!r.ok) {
         const map = {
           full: "很抱歉，這場活動名額剛好額滿了。如想候補請來電洽詢。",
