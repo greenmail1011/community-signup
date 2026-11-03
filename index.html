@@ -8,6 +8,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com">
+<script>
+// 一打開就先下載海報，不等其他東西
+(function(){try{var c=(new URLSearchParams(location.search).get("c")||"").trim().toLowerCase();
+if(c){var l=document.createElement("link");l.rel="preload";l.as="image";l.href="poster-"+encodeURIComponent(c)+".jpg";document.head.appendChild(l);}}catch(e){}})();
+</script>
 <style>
 :root{
   --bg:#FFF8EE; --panel:#FFFFFF; --soft:#FFF0DC; --sky:#EAF3FF;
@@ -42,9 +49,9 @@ p{margin:0;text-wrap:pretty}
 .info div{display:grid;grid-template-columns:64px 1fr;gap:8px;align-items:baseline}
 .info dt{font-size:15px;font-weight:700;color:var(--muted)}
 .info dd{margin:0;font-weight:700}
-.poster-btn{display:flex;align-items:center;gap:12px;background:var(--panel);border:2px solid #CFE0FA;border-radius:14px;padding:8px;cursor:pointer;font:inherit;color:inherit;text-align:left;width:100%}
-.poster-btn img{width:64px;height:90px;object-fit:cover;border-radius:8px;flex:0 0 auto}
-.poster-btn span{font-weight:700;color:var(--blue)}
+.poster{display:block;width:100%;height:auto;border-radius:16px;margin-top:18px;box-shadow:0 2px 10px rgba(20,40,75,.12);background:var(--soft)}
+.poster+.hero{margin-top:0}
+.hero.has-poster{display:none} /* 海報已經有標題、時間、地點，就不重複顯示 */
 
 /* card */
 .card{background:var(--panel);border:2px solid var(--border);border-radius:18px;padding:22px 18px;display:flex;flex-direction:column;gap:18px}
@@ -114,10 +121,6 @@ input:focus,select:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 
 footer{text-align:center;color:var(--muted);font-size:15px;display:flex;flex-direction:column;gap:2px;padding-top:8px}
 footer a{font-weight:700}
 
-dialog{border:0;padding:0;background:transparent;max-width:min(94vw,560px)}
-dialog::backdrop{background:rgba(10,20,40,.8)}
-dialog img{width:100%;height:auto;max-height:86vh;object-fit:contain;display:block;border-radius:10px}
-dialog button{margin-top:10px}
 </style>
 </head>
 <body>
@@ -125,12 +128,13 @@ dialog button{margin-top:10px}
 
 <main class="wrap">
 
+  <img class="poster" id="poster" alt="活動海報" hidden>
+
   <section class="hero" id="hero" hidden>
     <span class="kicker" id="kicker">攜手社區</span>
     <h1 id="title">青銀<b>飛行趣</b></h1>
     <p class="sub" id="subtitle"></p>
     <dl class="info" id="info"></dl>
-    <button type="button" class="poster-btn" id="poster-btn" hidden><img id="poster-thumb" alt=""><span>看活動海報（點一下放大）</span></button>
   </section>
 
   <!-- 讀取中 / 錯誤 -->
@@ -213,13 +217,9 @@ dialog button{margin-top:10px}
   </footer>
 </main>
 
-<dialog id="poster-dlg" aria-label="活動海報">
-  <img id="poster-big" alt="活動海報">
-  <button type="button" class="btn btn-ghost" style="background:#FFFFFF" id="poster-close">關閉</button>
-</dialog>
 
 <script src="config.js?v=2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (function(){
   const CFG = window.APP_CONFIG || {};
@@ -269,30 +269,51 @@ dialog button{margin-top:10px}
     });
     info.hidden = !info.children.length;
     document.title = (CFG.EVENT_TITLE || "活動") + "報名｜" + c.name;
-    // 海報：poster-社區代碼.jpg，有就顯示
+    // 海報：poster-社區代碼.jpg，有就整張顯示在最上面
     const src = "poster-" + encodeURIComponent(c.code) + ".jpg";
-    const img = new Image();
-    img.onload = () => { $("#poster-thumb").src = src; $("#poster-big").src = src; show("#poster-btn", true); };
-    img.src = src;
+    const img = $("#poster");
+    if (img.dataset.src !== src) {
+      img.dataset.src = src;
+      img.onload = () => { img.hidden = false; $("#hero").classList.add("has-poster"); };
+      img.onerror = () => { img.hidden = true; $("#hero").classList.remove("has-poster"); };
+      img.src = src;
+    }
     show("#hero", true);
+  }
+
+  const LOCAL = CFG.COMMUNITIES || {};
+  function renderPick(list){
+    const box = $("#comm-list"); box.innerHTML = "";
+    list.forEach(c => {
+      const a = document.createElement("a"); a.className = "comm"; a.href = "?c=" + encodeURIComponent(c.code);
+      a.append(Object.assign(document.createElement("b"), {textContent:c.name}),
+               Object.assign(document.createElement("span"), {textContent:[c.time, c.place].filter(Boolean).join("｜")}));
+      box.append(a);
+    });
+    show("#loading", false); show("#pick", true);
+  }
+  function applyStatus(c){
+    if (!c.open) { fail("這場活動已經截止報名", "謝謝你的關注！如有問題請來電洽詢。"); return false; }
+    if (c.full) { fail("這場活動名額已滿", "謝謝你的關注！如想候補請來電洽詢。"); return false; }
+    return true;
   }
 
   async function init(){
     if (!API) return fail("報名系統尚未設定完成", "請管理者在 config.js 填入 API_URL。");
-    const code = (new URLSearchParams(location.search).get("c") || "").trim();
+    const code = (new URLSearchParams(location.search).get("c") || "").trim().toLowerCase();
+    const local = code && LOCAL[code] ? Object.assign({code:code, open:true, full:false, line:""}, LOCAL[code]) : null;
+
+    // 1) 先用 config.js 的資料立刻顯示，不等 Google
+    if (!code && Object.keys(LOCAL).length) renderPick(Object.keys(LOCAL).map(k => Object.assign({code:k}, LOCAL[k])));
+    if (local) { community = local; renderHero(community); show("#loading", false); show("#form", true); }
+
+    // 2) 背景向 Google 確認最新狀態（同時把 Google 端喚醒，送出報名會比較快）
     try {
       if (!code) {
         const r = await apiGet({action:"communities"});
         if (!r.ok) throw new Error(r.error);
-        const list = $("#comm-list"); list.innerHTML = "";
         if (!r.communities.length) return fail("目前沒有開放報名的活動", "");
-        r.communities.forEach(c => {
-          const a = document.createElement("a"); a.className = "comm"; a.href = "?c=" + encodeURIComponent(c.code);
-          a.append(Object.assign(document.createElement("b"), {textContent:c.name}),
-                   Object.assign(document.createElement("span"), {textContent:[c.time, c.place].filter(Boolean).join("｜")}));
-          list.append(a);
-        });
-        show("#loading", false); show("#pick", true);
+        renderPick(r.communities);
         return;
       }
       const r = await apiGet({action:"community", code:code});
@@ -300,13 +321,14 @@ dialog button{margin-top:10px}
         if (r.error === "no_community") return fail("找不到這個報名頁", "網址可能不完整，請向社區或主辦單位索取正確的報名連結。");
         throw new Error(r.error);
       }
+      const doneShown = !$("#done").hidden;
       community = r.community;
       renderHero(community);
-      if (!community.open) return fail("這場活動已經截止報名", "謝謝你的關注！如有問題請來電洽詢。");
-      if (community.full) return fail("這場活動名額已滿", "謝謝你的關注！如想候補請來電洽詢。");
+      if (doneShown) return; // 已經報名完成，就不要再切換畫面
+      if (!applyStatus(community)) return;
       show("#loading", false); show("#form", true);
     } catch (e) {
-      fail("網路好像不太穩", "請稍後重新整理這個頁面再試一次。");
+      if (!local && !(!code && Object.keys(LOCAL).length)) fail("網路好像不太穩", "請稍後重新整理這個頁面再試一次。");
     }
   }
 
@@ -413,12 +435,6 @@ dialog button{margin-top:10px}
     form.scrollIntoView({behavior:"smooth"});
     setTimeout(() => $("#f-name").focus({preventScroll:true}), 300);
   });
-
-  // 海報放大
-  const dlg = $("#poster-dlg");
-  $("#poster-btn").addEventListener("click", () => { try { dlg.showModal(); } catch(e) { window.open($("#poster-big").src); } });
-  $("#poster-close").addEventListener("click", () => dlg.close());
-  dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
 
   init();
 })();
