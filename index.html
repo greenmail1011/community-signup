@@ -11,8 +11,10 @@
 <link rel="preconnect" href="https://script.google.com">
 <link rel="preconnect" href="https://script.googleusercontent.com">
 <script>
-// 一打開就先下載海報，不等其他東西
+// 沒有社區代碼（直接打開根網址）→ 進管理者後台登入；報名者一律用管理者發出的 ?c= 連結
+// 有代碼 → 一打開就先下載海報，不等其他東西
 (function(){try{var c=(new URLSearchParams(location.search).get("c")||"").trim().toLowerCase();
+if(!c){location.replace("admin.html");return;}
 if(c){var l=document.createElement("link");l.rel="preload";l.as="image";l.href="poster-"+encodeURIComponent(c)+".jpg";document.head.appendChild(l);}}catch(e){}})();
 </script>
 <style>
