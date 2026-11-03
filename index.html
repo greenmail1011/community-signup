@@ -129,7 +129,15 @@ input:focus,select:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 
 .done-head p{font-size:22px;font-weight:700}
 .done-no{font-variant-numeric:tabular-nums;font-family:var(--f-round);color:var(--ring);font-size:30px}
 .line-step{background:#E9F8EF;border:3px solid #9ED9B4;border-radius:20px;padding:20px 16px;display:flex;flex-direction:column;gap:14px}
-.line-step h3{font-size:27px}
+.line-step h3{font-size:28px;color:var(--line-deep);text-align:center}
+.line-step .btn-line{min-height:92px;font-size:29px;letter-spacing:.04em;gap:10px;white-space:nowrap;padding:12px 14px}
+.btn-line .ico{width:40px;height:40px;flex:0 0 40px}
+.line-tip{font-size:19px;font-weight:700;color:var(--ink-2);text-align:center}
+/* 報名表下方：已報名的人直接加群組 */
+.join-again{display:flex;flex-direction:column;gap:10px;border-top:3px dashed var(--blue-soft);padding-top:18px;margin-top:6px;text-align:center}
+.join-again p{font-size:21px;font-weight:700}
+.btn-line-ghost{background:var(--white);color:var(--line-deep);border:3px solid var(--line);font-size:24px;min-height:68px;letter-spacing:.06em;white-space:nowrap;padding:12px 14px}
+.btn-line-ghost .ico{width:32px;height:32px;flex:0 0 32px}
 .line-step .big{font-size:20px;font-weight:700}
 .say{background:var(--white);border-radius:14px;padding:12px 14px;font-weight:900;font-size:21px}
 .qr-wrap{display:none;align-items:center;gap:14px}
@@ -203,6 +211,11 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
 
     <p class="form-err" id="form-err" role="alert" hidden></p>
     <button class="btn btn-primary" id="submit" type="submit">送出報名</button>
+
+    <div class="join-again" id="join-again" hidden>
+      <p>已經報名過了？</p>
+      <a class="btn btn-line-ghost" id="join-again-btn" href="#"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 3C6.5 3 2 6.6 2 11c0 3.9 3.5 7.2 8.3 7.9.3.1.8.2.9.5.1.3.1.7 0 1l-.1.9c0 .3-.2 1 .9.5s5.9-3.5 8-6C21.3 14.3 22 12.7 22 11c0-4.4-4.5-8-10-8z"/></svg>直接加入 LINE 群組</a>
+    </div>
   </form>
 
   <!-- 報名成功 -->
@@ -214,10 +227,11 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
     </div>
 
     <div class="line-step" id="line-step">
-      <h3>最後一步：加入社區 LINE 群組</h3>
-      <p class="big">活動通知、臨時異動都會在群組公告，有問題也可以直接在群組問我們。</p>
-      <a class="btn btn-line" id="line-btn" href="#" target="_blank" rel="noopener">加入 LINE 群組</a>
+      <h3>最後一步：加入群組</h3>
+      <a class="btn btn-line" id="line-btn" href="#"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 3C6.5 3 2 6.6 2 11c0 3.9 3.5 7.2 8.3 7.9.3.1.8.2.9.5.1.3.1.7 0 1l-.1.9c0 .3-.2 1 .9.5s5.9-3.5 8-6C21.3 14.3 22 12.7 22 11c0-4.4-4.5-8-10-8z"/></svg>加入 LINE 群組</a>
+      <p class="line-tip">按下去會打開 LINE，再按「加入」就完成了</p>
       <div class="qr-wrap"><div class="qr" id="qr" role="img" aria-label="LINE 群組 QR code"></div><p class="muted">用電腦看這頁的話，請拿手機 LINE 掃描左邊 QR code 加入。</p></div>
+      <p class="big">活動通知、臨時異動都會在群組公告，有問題也可以直接在群組問我們。</p>
       <p class="say" id="say"></p>
     </div>
     <p class="muted" id="no-line" hidden>我們會用你留的手機號碼與你聯繫。</p>
@@ -232,7 +246,7 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
 </main>
 
 
-<script src="config.js?v=3"></script>
+<script src="config.js?v=4"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (function(){
@@ -311,7 +325,7 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
     if (!code) return fail("請用社區給你的報名連結", "每個社區都有自己的報名網址，請向社區或主辦單位索取。");
 
     // 1) 先用 config.js 的資料立刻顯示，不等 Google
-    if (local) { community = local; renderHero(community); show("#loading", false); show("#form", true); }
+    if (local) { community = local; renderHero(community); setJoinAgain(); show("#loading", false); show("#form", true); }
 
     // 2) 背景向 Google 確認最新狀態（同時把 Google 端喚醒，送出報名會比較快）
     try {
@@ -321,7 +335,8 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
         throw new Error(r.error);
       }
       const doneShown = !$("#done").hidden;
-      community = r.community;
+      community = Object.assign({}, r.community, {line: r.community.line || (local && local.line) || ""});
+      setJoinAgain();
       renderHero(community);
       if (doneShown) return; // 已經報名完成，就不要再切換畫面
       if (!applyStatus(community)) return;
@@ -397,7 +412,7 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
         return;
       }
       lastName = v.name;
-      if (r.community) community = r.community;
+      if (r.community) community = Object.assign({}, r.community, {line: r.community.line || community.line || ""});
       renderDone(r, v);
     } catch (err) {
       $("#form-err").textContent = "網路好像不太穩，資料還沒送出，請再按一次「送出報名」。";
@@ -406,6 +421,13 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
       btn.disabled = false; btn.textContent = "送出報名";
     }
   });
+
+  // 報名表最下面「已經報名過了？直接加入 LINE 群組」：有群組連結才顯示
+  function setJoinAgain(){
+    const line = community && community.line;
+    show("#join-again", !!line);
+    if (line) $("#join-again-btn").href = line;
+  }
 
   function renderDone(r, v){
     $("#done-title").textContent = r.dup ? "你已經報名過囉！" : "報名成功！";
