@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>活動報名｜青銀飛行趣</title>
+<meta name="description" content="青銀無人機體驗課程線上報名，填寫姓名、性別、年齡、手機，報名後加入社區 LINE 群組。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<style>
+:root{
+  --bg:#FFF8EE; --panel:#FFFFFF; --soft:#FFF0DC; --sky:#EAF3FF;
+  --text:#14284B; --muted:#55627A; --border:#EED9BD;
+  --blue:#1E56B0; --orange:#C94F06; --orange-hover:#B04404; --sun:#FFC83D;
+  --line:#048A3A; --line-hover:#03732F; --err:#B42318; --ok:#15803D;
+  --f:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--f);font-size:18px;line-height:1.65;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
+a{color:var(--blue)}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:6px}
+h1,h2{margin:0;line-height:1.3;text-wrap:balance}
+p{margin:0;text-wrap:pretty}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+
+.top{margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:10px max(16px,env(safe-area-inset-left,0px));
+  background:var(--text);color:#FFFFFF}
+.top-in{max-width:640px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:15px;font-weight:700}
+.top-in .tel{color:var(--sun);text-decoration:none;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* hero */
+.hero{margin-top:18px;border-radius:20px;background:var(--sky);border:2px solid #CFE0FA;padding:20px 18px;display:flex;flex-direction:column;gap:12px}
+.kicker{align-self:flex-start;background:var(--sun);color:var(--text);font-weight:900;font-size:15px;border-radius:999px;padding:2px 14px}
+.hero h1{font-size:clamp(34px,10vw,46px);font-weight:900;letter-spacing:.06em;color:var(--blue)}
+.hero h1 b{color:var(--orange)}
+.sub{font-weight:700;font-size:19px}
+.info{display:grid;gap:8px;margin:4px 0 0;padding:14px;background:var(--panel);border-radius:14px}
+.info div{display:grid;grid-template-columns:64px 1fr;gap:8px;align-items:baseline}
+.info dt{font-size:15px;font-weight:700;color:var(--muted)}
+.info dd{margin:0;font-weight:700}
+.poster-btn{display:flex;align-items:center;gap:12px;background:var(--panel);border:2px solid #CFE0FA;border-radius:14px;padding:8px;cursor:pointer;font:inherit;color:inherit;text-align:left;width:100%}
+.poster-btn img{width:64px;height:90px;object-fit:cover;border-radius:8px;flex:0 0 auto}
+.poster-btn span{font-weight:700;color:var(--blue)}
+
+/* card */
+.card{background:var(--panel);border:2px solid var(--border);border-radius:18px;padding:22px 18px;display:flex;flex-direction:column;gap:18px}
+.card h2{font-size:24px;font-weight:900;letter-spacing:.04em}
+.muted{color:var(--muted);font-size:16px}
+.field{display:flex;flex-direction:column;gap:6px;border:0;margin:0;padding:0;min-width:0}
+.field>label,.field legend{font-weight:900;font-size:19px;padding:0}
+.field .opt-tag{font-size:14px;font-weight:700;color:var(--muted);margin-left:6px}
+.req{color:var(--orange);margin-left:4px}
+input[type=text],input[type=tel],select{width:100%;font:inherit;font-size:20px;color:var(--text);background:#FFFFFF;
+  border:2px solid #D6C3A8;border-radius:12px;padding:12px 14px;min-height:56px}
+input:focus,select:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px #CFE0FA}
+.field.bad input,.field.bad .pills{border-color:var(--err)}
+.msg{color:var(--err);font-size:15px;font-weight:700;min-height:0}
+.pills{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pill{position:relative}
+.pill input{position:absolute;opacity:0;inset:0;margin:0;pointer-events:none}
+.pill span{display:flex;align-items:center;justify-content:center;min-height:56px;border:2px solid #D6C3A8;border-radius:12px;font-weight:900;font-size:19px;cursor:pointer;background:#FFFFFF;text-align:center;line-height:1.2;padding:4px}
+.pill input:checked+span{border-color:var(--blue);background:var(--blue);color:#FFFFFF}
+.pill input:focus-visible+span{outline:3px solid var(--blue);outline-offset:3px}
+.field.bad .pill span{border-color:var(--err)}
+.age-row{display:flex;align-items:center;gap:10px}
+.age-row input{max-width:140px;text-align:center}
+.age-row span{font-weight:700}
+.consent{display:flex;gap:12px;align-items:flex-start;background:var(--soft);border-radius:12px;padding:14px;cursor:pointer;font-size:16px}
+.consent input{width:26px;height:26px;flex:0 0 26px;margin:2px 0 0;accent-color:var(--blue)}
+.field.bad .consent{outline:2px solid var(--err)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:60px;padding:12px 20px;border-radius:14px;border:0;
+  font:inherit;font-size:21px;font-weight:900;letter-spacing:.06em;text-decoration:none;cursor:pointer;width:100%}
+.btn-primary{background:var(--orange);color:#FFFFFF}
+.btn-primary:hover{background:var(--orange-hover)}
+.btn-primary[disabled]{opacity:.6;cursor:wait}
+.btn-line{background:var(--line);color:#FFFFFF}
+.btn-line:hover{background:var(--line-hover)}
+.btn-ghost{background:transparent;color:var(--blue);border:2px solid var(--blue);font-size:18px;min-height:52px}
+.form-err{background:#FEECEB;color:var(--err);border-radius:12px;padding:12px 14px;font-weight:700;font-size:16px}
+
+/* states */
+.state{text-align:center;padding:40px 18px}
+.state h2{margin-bottom:8px}
+.spinner{width:36px;height:36px;margin:0 auto 12px;border-radius:50%;border:4px solid #E6D6BF;border-top-color:var(--orange);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spinner{animation:none}}
+
+/* success */
+.done-head{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.done-mark{width:64px;height:64px;border-radius:50%;background:var(--ok);color:#FFFFFF;font-size:36px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.done-no{font-variant-numeric:tabular-nums;font-weight:900;color:var(--orange)}
+.line-step{background:#EAF7EF;border:2px solid #A7DDBC;border-radius:16px;padding:18px 16px;display:flex;flex-direction:column;gap:12px}
+.line-step h3{margin:0;font-size:21px;font-weight:900}
+.line-step .big{font-size:17px}
+.say{background:#FFFFFF;border-radius:10px;padding:10px 12px;font-weight:700}
+.qr-wrap{display:none;align-items:center;gap:14px}
+.qr{width:132px;height:132px;flex:0 0 132px;background:#FFFFFF;padding:8px;border-radius:10px}
+.qr svg{width:100%;height:100%;display:block}
+@media (min-width:760px){.qr-wrap{display:flex}}
+
+/* select community */
+.comm-list{display:grid;gap:10px}
+.comm{display:flex;flex-direction:column;gap:2px;padding:16px;border:2px solid #D6C3A8;border-radius:14px;background:#FFFFFF;text-decoration:none;color:inherit}
+.comm b{font-size:20px}
+.comm span{color:var(--muted);font-size:16px}
+.comm:hover{border-color:var(--blue)}
+
+footer{text-align:center;color:var(--muted);font-size:15px;display:flex;flex-direction:column;gap:2px;padding-top:8px}
+footer a{font-weight:700}
+
+dialog{border:0;padding:0;background:transparent;max-width:min(94vw,560px)}
+dialog::backdrop{background:rgba(10,20,40,.8)}
+dialog img{width:100%;height:auto;max-height:86vh;object-fit:contain;display:block;border-radius:10px}
+dialog button{margin-top:10px}
+</style>
+</head>
+<body>
+<div class="top"><div class="top-in"><span id="org">新竹市無人機創新科技協會</span><a class="tel" id="top-tel" href="#">☎ 03-540-3463</a></div></div>
+
+<main class="wrap">
+
+  <section class="hero" id="hero" hidden>
+    <span class="kicker" id="kicker">攜手社區</span>
+    <h1 id="title">青銀<b>飛行趣</b></h1>
+    <p class="sub" id="subtitle"></p>
+    <dl class="info" id="info"></dl>
+    <button type="button" class="poster-btn" id="poster-btn" hidden><img id="poster-thumb" alt=""><span>看活動海報（點一下放大）</span></button>
+  </section>
+
+  <!-- 讀取中 / 錯誤 -->
+  <section class="card state" id="loading"><div class="spinner" aria-hidden="true"></div><p>載入中…</p></section>
+  <section class="card state" id="error" hidden><h2 id="err-title">找不到這個報名頁</h2><p class="muted" id="err-text"></p></section>
+
+  <!-- 沒帶社區代碼：選社區 -->
+  <section class="card" id="pick" hidden>
+    <h2>請選擇你的社區</h2>
+    <div class="comm-list" id="comm-list"></div>
+  </section>
+
+  <!-- 報名表 -->
+  <form class="card" id="form" novalidate hidden>
+    <h2>填寫報名資料</h2>
+    <p class="muted">四個欄位填好按「送出報名」就完成了。報名後會請你加入社區 LINE 群組，活動通知都會在群組公告。</p>
+
+    <div class="field" data-f="name">
+      <label for="f-name">姓名<span class="req">*</span></label>
+      <input type="text" id="f-name" name="name" autocomplete="name" maxlength="30">
+      <p class="msg" role="alert"></p>
+    </div>
+
+    <fieldset class="field" data-f="gender">
+      <legend>性別<span class="req">*</span></legend>
+      <div class="pills">
+        <label class="pill"><input type="radio" name="gender" value="男"><span>男</span></label>
+        <label class="pill"><input type="radio" name="gender" value="女"><span>女</span></label>
+        <label class="pill"><input type="radio" name="gender" value="不便透露"><span>不便透露</span></label>
+      </div>
+      <p class="msg" role="alert"></p>
+    </fieldset>
+
+    <div class="field" data-f="age">
+      <label for="f-age">年齡<span class="req">*</span></label>
+      <div class="age-row"><input type="text" id="f-age" name="age" inputmode="numeric" maxlength="3" autocomplete="off"><span>歲</span></div>
+      <p class="msg" role="alert"></p>
+    </div>
+
+    <div class="field" data-f="phone">
+      <label for="f-phone">手機號碼<span class="req">*</span></label>
+      <input type="tel" id="f-phone" name="phone" inputmode="numeric" autocomplete="tel" maxlength="13" placeholder="0912-345-678">
+      <p class="msg" role="alert"></p>
+    </div>
+
+    <div class="field" data-f="lineName">
+      <label for="f-line">LINE 名稱<span class="opt-tag">選填｜方便我們在群組認出你</span></label>
+      <input type="text" id="f-line" name="lineName" maxlength="30" autocomplete="off">
+    </div>
+
+    <div class="hp" aria-hidden="true"><label>網站<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+
+    <div class="field" data-f="consent">
+      <label class="consent"><input type="checkbox" id="f-consent"><span>我同意主辦單位蒐集以上資料，僅用於本活動的報名與聯繫，活動結束後不另作他用。</span></label>
+      <p class="msg" role="alert"></p>
+    </div>
+
+    <p class="form-err" id="form-err" role="alert" hidden></p>
+    <button class="btn btn-primary" id="submit" type="submit">送出報名</button>
+  </form>
+
+  <!-- 報名成功 -->
+  <section class="card" id="done" hidden>
+    <div class="done-head">
+      <div class="done-mark" aria-hidden="true">✓</div>
+      <h2 id="done-title">報名成功！</h2>
+      <p id="done-text"></p>
+    </div>
+
+    <div class="line-step" id="line-step">
+      <h3>最後一步：加入社區 LINE 群組</h3>
+      <p class="big">活動通知、臨時異動都會在群組公告，有問題也可以直接在群組問我們。</p>
+      <a class="btn btn-line" id="line-btn" href="#" target="_blank" rel="noopener">開啟 LINE 加入群組</a>
+      <div class="qr-wrap"><div class="qr" id="qr" role="img" aria-label="LINE 群組 QR code"></div><p class="muted">用電腦看這頁的話，請拿手機 LINE 掃描左邊 QR code 加入。</p></div>
+      <p class="say" id="say"></p>
+    </div>
+    <p class="muted" id="no-line" hidden>我們會用你留的手機號碼與你聯繫。</p>
+
+    <button type="button" class="btn btn-ghost" id="again">幫家人再報名一位</button>
+  </section>
+
+  <footer>
+    <p id="f-org">活動企劃｜新竹市無人機創新科技協會</p>
+    <p>報名問題請來電 <a id="f-tel" href="#">03-540-3463</a></p>
+  </footer>
+</main>
+
+<dialog id="poster-dlg" aria-label="活動海報">
+  <img id="poster-big" alt="活動海報">
+  <button type="button" class="btn btn-ghost" style="background:#FFFFFF" id="poster-close">關閉</button>
+</dialog>
+
+<script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+(function(){
+  const CFG = window.APP_CONFIG || {};
+  const API = CFG.API_URL || "";
+  const $ = s => document.querySelector(s);
+  const show = (id, on) => { $(id).hidden = !on; };
+  let community = null;
+
+  // ---- 共用文字 ----
+  if (CFG.ORG_NAME) { $("#org").textContent = CFG.ORG_NAME; $("#f-org").textContent = "活動企劃｜" + CFG.ORG_NAME; }
+  if (CFG.ORG_PHONE) {
+    const tel = "tel:" + CFG.ORG_PHONE.replace(/[^\d+]/g, "");
+    $("#top-tel").textContent = "☎ " + CFG.ORG_PHONE; $("#top-tel").href = tel;
+    $("#f-tel").textContent = CFG.ORG_PHONE; $("#f-tel").href = tel;
+  }
+  if (CFG.EVENT_TITLE) {
+    const t = CFG.EVENT_TITLE;
+    // 「青銀飛行趣」→ 後三個字橘色
+    $("#title").innerHTML = "";
+    $("#title").append(t.length > 3 ? t.slice(0, -3) : "", Object.assign(document.createElement("b"), {textContent: t.length > 3 ? t.slice(-3) : t}));
+  }
+  $("#subtitle").textContent = CFG.EVENT_SUBTITLE || "";
+
+  function fail(title, text){
+    show("#loading", false); show("#form", false); show("#pick", false);
+    $("#err-title").textContent = title; $("#err-text").textContent = text || ""; show("#error", true);
+  }
+
+  async function apiGet(params){
+    const r = await fetch(API + "?" + new URLSearchParams(params).toString());
+    return r.json();
+  }
+  async function apiPost(body){
+    // 不加 Content-Type（預設 text/plain），Apps Script 才不會擋跨網域
+    const r = await fetch(API, {method:"POST", body: JSON.stringify(body)});
+    return r.json();
+  }
+
+  function renderHero(c){
+    $("#kicker").textContent = "攜手 " + c.name;
+    const info = $("#info"); info.innerHTML = "";
+    [["活動時間", c.time], ["活動地點", c.place]].forEach(([k, v]) => {
+      if (!v) return;
+      const d = document.createElement("div");
+      d.append(Object.assign(document.createElement("dt"), {textContent:k}), Object.assign(document.createElement("dd"), {textContent:v}));
+      info.append(d);
+    });
+    info.hidden = !info.children.length;
+    document.title = (CFG.EVENT_TITLE || "活動") + "報名｜" + c.name;
+    // 海報：poster-社區代碼.jpg，有就顯示
+    const src = "poster-" + encodeURIComponent(c.code) + ".jpg";
+    const img = new Image();
+    img.onload = () => { $("#poster-thumb").src = src; $("#poster-big").src = src; show("#poster-btn", true); };
+    img.src = src;
+    show("#hero", true);
+  }
+
+  async function init(){
+    if (!API) return fail("報名系統尚未設定完成", "請管理者在 config.js 填入 API_URL。");
+    const code = (new URLSearchParams(location.search).get("c") || "").trim();
+    try {
+      if (!code) {
+        const r = await apiGet({action:"communities"});
+        if (!r.ok) throw new Error(r.error);
+        const list = $("#comm-list"); list.innerHTML = "";
+        if (!r.communities.length) return fail("目前沒有開放報名的活動", "");
+        r.communities.forEach(c => {
+          const a = document.createElement("a"); a.className = "comm"; a.href = "?c=" + encodeURIComponent(c.code);
+          a.append(Object.assign(document.createElement("b"), {textContent:c.name}),
+                   Object.assign(document.createElement("span"), {textContent:[c.time, c.place].filter(Boolean).join("｜")}));
+          list.append(a);
+        });
+        show("#loading", false); show("#pick", true);
+        return;
+      }
+      const r = await apiGet({action:"community", c:code});
+      if (!r.ok) {
+        if (r.error === "no_community") return fail("找不到這個報名頁", "網址可能不完整，請向社區或主辦單位索取正確的報名連結。");
+        throw new Error(r.error);
+      }
+      community = r.community;
+      renderHero(community);
+      if (!community.open) return fail("這場活動已經截止報名", "謝謝你的關注！如有問題請來電洽詢。");
+      if (community.full) return fail("這場活動名額已滿", "謝謝你的關注！如想候補請來電洽詢。");
+      show("#loading", false); show("#form", true);
+    } catch (e) {
+      fail("網路好像不太穩", "請稍後重新整理這個頁面再試一次。");
+    }
+  }
+
+  // ---- 表單驗證 ----
+  const form = $("#form");
+  const field = k => form.querySelector('[data-f="' + k + '"]');
+  function setErr(k, msg){
+    const f = field(k); f.classList.toggle("bad", !!msg);
+    const m = f.querySelector(".msg"); if (m) m.textContent = msg || "";
+  }
+  function values(){
+    const g = form.querySelector('input[name="gender"]:checked');
+    return {
+      name: $("#f-name").value.trim(),
+      gender: g ? g.value : "",
+      age: $("#f-age").value.replace(/[^\d]/g, ""),
+      phone: $("#f-phone").value.replace(/[^\d]/g, ""),
+      lineName: $("#f-line").value.trim(),
+      consent: $("#f-consent").checked,
+      website: form.website.value
+    };
+  }
+  function validate(v){
+    const e = {};
+    if (!v.name) e.name = "請填寫姓名";
+    if (!v.gender) e.gender = "請選擇性別";
+    const a = Number(v.age);
+    if (!v.age) e.age = "請填寫年齡"; else if (!(a >= 1 && a <= 120)) e.age = "年齡請填 1～120 之間的數字";
+    if (!v.phone) e.phone = "請填寫手機號碼"; else if (!/^09\d{8}$/.test(v.phone)) e.phone = "手機號碼是 09 開頭的 10 碼數字";
+    if (!v.consent) e.consent = "請勾選同意，我們才能聯繫你";
+    ["name","gender","age","phone","consent"].forEach(k => setErr(k, e[k]));
+    return e;
+  }
+  // 全形數字轉半形
+  ["#f-age", "#f-phone"].forEach(s => $(s).addEventListener("input", ev => {
+    const t = ev.target, v = t.value.replace(/[０-９]/g, d => String.fromCharCode(d.charCodeAt(0) - 0xFEE0));
+    if (v !== t.value) t.value = v;
+  }));
+  form.addEventListener("input", ev => { const f = ev.target.closest("[data-f]"); if (f && f.classList.contains("bad")) validate(values()); });
+  form.addEventListener("change", ev => { const f = ev.target.closest("[data-f]"); if (f && f.classList.contains("bad")) validate(values()); });
+
+  let lastName = "";
+  form.addEventListener("submit", async ev => {
+    ev.preventDefault();
+    show("#form-err", false);
+    const v = values();
+    const e = validate(v);
+    const first = Object.keys(e)[0];
+    if (first) {
+      const el = field(first).querySelector("input");
+      field(first).scrollIntoView({behavior:"smooth", block:"center"});
+      if (el) setTimeout(() => el.focus({preventScroll:true}), 300);
+      return;
+    }
+    const btn = $("#submit"); btn.disabled = true; btn.textContent = "送出中…";
+    try {
+      const r = await apiPost(Object.assign({action:"register", c: community.code}, v));
+      if (!r.ok) {
+        const map = {
+          full: "很抱歉，這場活動名額剛好額滿了。如想候補請來電洽詢。",
+          closed: "這場活動已經截止報名。",
+          invalid: "有欄位格式不對，請再檢查一次。",
+          no_community: "找不到這個社區的報名頁，請確認網址。"
+        };
+        $("#form-err").textContent = map[r.error] || "送出失敗，請再按一次「送出報名」。";
+        show("#form-err", true);
+        if (r.error === "invalid" && r.fields) r.fields.forEach(k => field(k) && setErr(k, "格式不正確"));
+        return;
+      }
+      lastName = v.name;
+      if (r.community) community = r.community;
+      renderDone(r, v);
+    } catch (err) {
+      $("#form-err").textContent = "網路好像不太穩，資料還沒送出，請再按一次「送出報名」。";
+      show("#form-err", true);
+    } finally {
+      btn.disabled = false; btn.textContent = "送出報名";
+    }
+  });
+
+  function renderDone(r, v){
+    $("#done-title").textContent = r.dup ? "你已經報名過囉！" : "報名成功！";
+    const t = $("#done-text"); t.innerHTML = "";
+    t.append(v.name + "，" + (r.dup ? "我們已經收到你的報名" : "謝謝你報名") + "（" + community.name + " 第 ",
+      Object.assign(document.createElement("span"), {className:"done-no", textContent: r.no}), " 號）");
+    const line = community.line;
+    show("#line-step", !!line); show("#no-line", !line);
+    if (line) {
+      $("#line-btn").href = line;
+      $("#say").textContent = "加入後請在群組說一聲：「我是 " + v.name + "，已報名」，我們就能認出你。";
+      try {
+        const q = qrcode(0, "M"); q.addData(line); q.make();
+        $("#qr").innerHTML = q.createSvgTag({cellSize:4, margin:0, scalable:true});
+      } catch (e) { $("#qr").parentElement.style.display = "none"; }
+    }
+    show("#form", false); show("#done", true);
+    window.scrollTo({top: $("#done").offsetTop - 12, behavior:"smooth"});
+  }
+
+  $("#again").addEventListener("click", () => {
+    form.reset();
+    ["name","gender","age","phone","consent"].forEach(k => setErr(k, ""));
+    $("#f-consent").checked = true; // 同一位填寫者，保留同意
+    show("#done", false); show("#form", true);
+    form.scrollIntoView({behavior:"smooth"});
+    setTimeout(() => $("#f-name").focus({preventScroll:true}), 300);
+  });
+
+  // 海報放大
+  const dlg = $("#poster-dlg");
+  $("#poster-btn").addEventListener("click", () => { try { dlg.showModal(); } catch(e) { window.open($("#poster-big").src); } });
+  $("#poster-close").addEventListener("click", () => dlg.close());
+  dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
+
+  init();
+})();
+</script>
+</body>
+</html>
