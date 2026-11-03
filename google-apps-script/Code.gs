@@ -54,6 +54,7 @@ function setup() {
     d.setFrozenRows(1);
   }
   if (!props.getProperty('ADMIN_KEY')) props.setProperty('ADMIN_KEY', randomKey_(10));
+  if (!props.getProperty('NOTIFY_KEY')) props.setProperty('NOTIFY_KEY', randomKey_(24)); // LINE 通知程式用
   fillPasswords(true);
   try {
     SpreadsheetApp.getUi().alert('初始化完成',
@@ -112,6 +113,7 @@ function doGet(e) {
       if (!c) return out_({ ok: false, error: 'no_community' });
       return out_({ ok: true, community: publicInfo_(c) });
     }
+    if (p.action === 'feed') return out_(feed_(p.key));
     if (p.action === 'communities') {
       return out_({ ok: true, communities: communities_().filter(function (c) { return c.open; })
         .map(function (c) { return { code: c.code, name: c.name, time: c.time, place: c.place }; }) });
@@ -120,6 +122,21 @@ function doGet(e) {
   } catch (err) {
     return out_({ ok: false, error: 'server', detail: String(err) });
   }
+}
+
+// GET ?action=feed&key=通知金鑰    → 給 Mac 上的 LINE 報名通知程式用：只回傳社區、姓名、時間（不含手機）
+function feed_(key) {
+  const k = PropertiesService.getScriptProperties().getProperty('NOTIFY_KEY');
+  if (!k || String(key || '') !== k) return { ok: false, error: 'key' };
+  const rows = readRows_();
+  const count = {};
+  rows.forEach(function (r) { count[r.cname || r.code] = (count[r.cname || r.code] || 0) + 1; });
+  return {
+    ok: true,
+    total: rows.length,
+    count: count,
+    rows: rows.map(function (r) { return { id: r.code + '-' + r.no + '-' + r.time, time: r.time, code: r.code, community: r.cname, name: r.name }; })
+  };
 }
 
 // POST {action:'register', ...}  → 報名
