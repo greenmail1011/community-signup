@@ -262,6 +262,15 @@ function data_(b) {
   };
 }
 
+/**
+ * 在編輯器選這個函式按「執行」：讓 Google 跳出授權，允許「連線到外部服務」。
+ * Google 登入後台要用到（向 Google 驗證登入憑證）。授權畫面若有勾選框，請全部勾選。
+ */
+function authorizeExternal() {
+  const r = UrlFetchApp.fetch('https://oauth2.googleapis.com/tokeninfo?id_token=test', { muteHttpExceptions: true });
+  Logger.log('外部連線正常（Google 回應代碼 ' + r.getResponseCode() + '，400 是正常的）');
+}
+
 /** 管理者 Google 帳號名單（小寫） */
 function adminEmails_() {
   const p = PropertiesService.getScriptProperties().getProperty('ADMIN_EMAILS');
