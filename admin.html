@@ -206,7 +206,8 @@ dialog h3{font-size:20px;margin-bottom:4px}
       ta.remove(); toast(ok ? "已複製" : "複製失敗，請手動選取");
     }
   }
-  const regUrl = code => new URL("./?c=" + encodeURIComponent(code), location.href).href;
+  // 對外分享用網址：代碼/（有專屬 LINE／FB 縮圖，打開後自動進 ?c=代碼）。新增社區要跑 tools/make_share.py
+  const regUrl = code => new URL("./" + encodeURIComponent(code) + "/", location.href).href;
   const fmtPhone = p => /^09\d{8}$/.test(p) ? p.slice(0,4) + "-" + p.slice(4,7) + "-" + p.slice(7) : p;
 
   async function load(cred){
