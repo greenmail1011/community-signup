@@ -177,7 +177,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
   </div>
 </dialog>
 
-<script src="config.js?v=5"></script>
+<script src="config.js?v=6"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (function(){
@@ -313,12 +313,13 @@ dialog h3{font-size:20px;margin-bottom:4px}
       const box = $("#comms"); box.innerHTML = "";
       DATA.communities.forEach(c => {
         const url = regUrl(c.code);
+        const short = ((CFG.COMMUNITIES || {})[c.code] || {}).short || "";  // 縮網址（config.js 的 short）
         const kv = el("dl", {className:"kv"});
-        [["時間", c.time], ["地點", c.place], ["報名頁", url]].forEach(([k, v]) => {
+        [["時間", c.time], ["地點", c.place], ["縮網址", short], ["報名頁", url]].forEach(([k, v]) => {
           if (v) kv.append(el("dt", {textContent:k}), el("dd", {textContent:v}));
         });
-        // 對外貼文用：社區、時間、地點、報名連結
-        const msg = (CFG.EVENT_TITLE || "") + "｜" + c.name + "\n" + (c.time ? "時間：" + c.time + "\n" : "") + (c.place ? "地點：" + c.place + "\n" : "") + "報名：" + url;
+        // 對外貼文用：社區、時間、地點、報名連結（有縮網址就用縮網址）
+        const msg = (CFG.EVENT_TITLE || "") + "｜" + c.name + "\n" + (c.time ? "時間：" + c.time + "\n" : "") + (c.place ? "地點：" + c.place + "\n" : "") + "報名：" + (short || url);
         box.append(el("div", {className:"comm"},
           el("div", {className:"comm-h"},
             el("h3", {textContent:c.name}),
@@ -327,8 +328,9 @@ dialog h3{font-size:20px;margin-bottom:4px}
             el("span", {className:"cnt num", textContent: c.count + (c.cap ? " / " + c.cap : "") + " 人"})),
           kv,
           el("div", {className:"row-btns"},
+            short ? btn("複製縮網址", () => copy(short)) : null,
             btn("複製報名連結", () => copy(url)),
-            btn("報名 QR", () => openQr(c.name, url, c.code)),
+            btn("報名 QR", () => openQr(c.name, short || url, c.code)),
             btn("複製報名訊息", () => copy(msg)),
             el("a", {className:"btn btn-ghost btn-sm", href:url, target:"_blank", rel:"noopener", textContent:"開啟報名頁"}),
             sheetUrl(c.code) ? el("a", {className:"btn btn-sheet btn-sm", href:sheetUrl(c.code), target:"_blank", rel:"noopener", textContent:"開啟試算表名單"}) : null)
