@@ -177,7 +177,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
   </div>
 </dialog>
 
-<script src="config.js?v=8"></script>
+<script src="config.js?v=9"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (function(){
@@ -205,6 +205,25 @@ dialog h3{font-size:20px;margin-bottom:4px}
       const ta = el("textarea", {value:t}); document.body.append(ta); ta.select();
       let ok = false; try { ok = document.execCommand("copy"); } catch(_) {}
       ta.remove(); toast(ok ? okMsg : "複製失敗，請手動選取");
+    }
+  }
+  // 把圖片（DM 海報）放進剪貼簿，可直接貼到 LINE／FB；瀏覽器不支援就改成下載
+  async function copyImage(url, filename){
+    try {
+      if (!window.ClipboardItem || !navigator.clipboard || !navigator.clipboard.write) throw new Error("no clipboard image");
+      const png = (async () => {
+        const r = await fetch(url, {cache:"no-store"});
+        if (!r.ok) throw new Error("找不到 DM 圖");
+        const bmp = await createImageBitmap(await r.blob());
+        const cv = document.createElement("canvas"); cv.width = bmp.width; cv.height = bmp.height;
+        cv.getContext("2d").drawImage(bmp, 0, 0);
+        return await new Promise(res => cv.toBlob(res, "image/png"));
+      })();
+      await navigator.clipboard.write([new ClipboardItem({"image/png": png})]);
+      toast("已複製 DM 圖，可以直接貼上");
+    } catch(e) {
+      const a = el("a", {href:url, download:filename}); document.body.append(a); a.click(); a.remove();
+      toast("這個瀏覽器不能直接複製圖片，已改成下載");
     }
   }
   // 對外分享用網址：代碼/（有專屬 LINE／FB 縮圖，打開後自動進 ?c=代碼）。新增社區要跑 tools/make_share.py
@@ -320,10 +339,8 @@ dialog h3{font-size:20px;margin-bottom:4px}
           if (v) kv.append(el("dt", {textContent:k}), el("dd", {textContent:v}));
         });
         // 對外貼文用：社區、時間、地點、報名連結（有縮網址就用縮網址）
-        // 宣傳 DM：config.js 的 DM_TEMPLATE 換上各社區資料
-        const dm = (CFG.DM_TEMPLATE || []).join("\n")
-          .replace(/\{社區\}/g, c.name).replace(/\{時間\}/g, c.time || ((CFG.COMMUNITIES || {})[c.code] || {}).time || "").replace(/\{地點\}/g, c.place || ((CFG.COMMUNITIES || {})[c.code] || {}).place || "")
-          .replace(/\{報名網址\}/g, short || url).replace(/\{電話\}/g, CFG.ORG_PHONE || "").replace(/\{主辦\}/g, CFG.ORG_NAME || "");
+        // DM 圖＝該社區海報 poster-代碼.jpg
+        const dmImg = new URL("poster-" + encodeURIComponent(c.code) + ".jpg", location.href).href;
         const msg = (CFG.EVENT_TITLE || "") + "｜" + c.name + "\n" + (c.time ? "時間：" + c.time + "\n" : "") + (c.place ? "地點：" + c.place + "\n" : "") + "報名：" + (short || url);
         box.append(el("div", {className:"comm"},
           el("div", {className:"comm-h"},
@@ -333,7 +350,8 @@ dialog h3{font-size:20px;margin-bottom:4px}
             el("span", {className:"cnt num", textContent: c.count + (c.cap ? " / " + c.cap : "") + " 人"})),
           kv,
           el("div", {className:"row-btns"},
-            dm ? el("button", {type:"button", className:"btn btn-primary btn-sm", textContent:"複製 DM", onclick: () => copy(dm, "已複製 DM，可以直接貼上")}) : null,
+            el("button", {type:"button", className:"btn btn-primary btn-sm", textContent:"複製 DM 圖", onclick: () => copyImage(dmImg, c.name + "_DM.jpg")}),
+            el("a", {className:"btn btn-ghost btn-sm", href: dmImg, download: c.name + "_DM.jpg", textContent:"下載 DM 圖"}),
             short ? btn("複製縮網址", () => copy(short)) : null,
             btn("複製報名連結", () => copy(url)),
             btn("報名 QR", () => openQr(c.name, short || url, c.code)),
