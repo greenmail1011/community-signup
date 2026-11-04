@@ -132,6 +132,41 @@ STUB = """<!doctype html>
 """
 
 
+def make_admin_image(out, ev, posters):
+    """報名後台的分享縮圖：左邊各社區海報疊放，右邊「報名後台」"""
+    W, H = 1200, 630
+    im = Image.new("RGB", (W, H), "#0E2A5E")
+    d = ImageDraw.Draw(im)
+    left = 560
+    ps = [Image.open(p).convert("RGB") for p in posters if os.path.exists(p)][:3]
+    if ps:
+        bg = ps[0].resize((left, int(ps[0].height * left / ps[0].width))).crop((0, 0, left, H)).filter(ImageFilter.GaussianBlur(20))
+        im.paste(bg, (0, 0))
+        pw = 360 if len(ps) > 1 else 420
+        step = (left - 40 - pw) // max(1, len(ps) - 1) if len(ps) > 1 else 0
+        for i, p in enumerate(ps):
+            t = p.resize((pw, int(p.height * pw / p.width)))
+            x0 = 20 + i * step
+            y0 = 36 + i * 64
+            im.paste(t.crop((0, 0, t.width, min(t.height, H - y0 - 20))), (x0, y0))
+    x = left + 48
+    d.rectangle((0, 0, W, 10), fill=RING)
+    y = 70
+    d.text((x, y), ev["org"], font=font(FONT_BOLD, 26), fill="#C9DCF7"); y += 56
+    d.text((x, y), ev["title"], font=font(FONT_BLACK, 84), fill=WHITE); y += 112
+    d.text((x, y), "報名後台", font=font(FONT_BLACK, 64), fill="#FFD84A"); y += 96
+    f2 = font(FONT_BOLD, 28)
+    for line in ["看各社區報名名單與人數", "複製報名連結、縮網址、DM 圖"]:
+        d.text((x, y), "・" + line, font=f2, fill=WHITE); y += 42
+    fb = font(FONT_BLACK, 32)
+    label = "協會成員 Google 登入"
+    bw = d.textlength(label, font=fb) + 64
+    by = H - 58 - 70
+    d.rounded_rectangle((x, by, x + bw, by + 70), radius=35, fill=RING)
+    d.text((x + 32, by + 12), label, font=fb, fill=WHITE)
+    im.save(out, "JPEG", quality=86, optimize=True, progressive=True)
+
+
 def main():
     ev, comms = read_config()
     first_poster = None
@@ -146,7 +181,9 @@ def main():
                            url=BASE_URL + code + "/", img=BASE_URL + "og-%s.jpg" % code, code=code)
         open(os.path.join(ROOT, code, "index.html"), "w", encoding="utf-8").write(page)
         print("ok", code)
-    make_image(os.path.join(ROOT, "og-default.jpg"), ev, None, None)  # 通用縮圖不放特定社區海報
+    make_image(os.path.join(ROOT, "og-default.jpg"), ev, None, None)
+    make_admin_image(os.path.join(ROOT, "og-admin.jpg"), ev, [os.path.join(ROOT, "poster-%s.jpg" % c) for c in comms])
+    print("ok admin")  # 通用縮圖不放特定社區海報
     print("ok default")
 
 
