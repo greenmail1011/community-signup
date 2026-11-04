@@ -26,7 +26,7 @@
 // 有代碼 → 一打開就先下載海報，不等其他東西
 (function(){try{var c=(new URLSearchParams(location.search).get("c")||"").trim().toLowerCase();
 if(!c){location.replace("admin.html");return;}
-if(c){var l=document.createElement("link");l.rel="preload";l.as="image";l.href="poster-"+encodeURIComponent(c)+".jpg?v=2";document.head.appendChild(l);}}catch(e){}})();
+if(c){var l=document.createElement("link");l.rel="preload";l.as="image";l.href="poster-"+encodeURIComponent(c)+".jpg?v=3";document.head.appendChild(l);}}catch(e){}})();
 </script>
 <style>
 :root{
@@ -297,7 +297,7 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
     info.hidden = !info.children.length;
     document.title = (CFG.EVENT_TITLE || "活動") + "報名｜" + c.name;
     // 海報：poster-社區代碼.jpg，有就整張顯示在最上面
-    const src = "poster-" + encodeURIComponent(c.code) + ".jpg?v=2"; // 換海報時把 v 加 1（跟上面 preload 一起改）
+    const src = "poster-" + encodeURIComponent(c.code) + ".jpg?v=3"; // 換海報時把 v 加 1（跟上面 preload 一起改）
     const img = $("#poster");
     if (img.dataset.src !== src) {
       img.dataset.src = src;
