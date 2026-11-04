@@ -177,7 +177,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
   </div>
 </dialog>
 
-<script src="config.js?v=7"></script>
+<script src="config.js?v=8"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (function(){
@@ -198,12 +198,13 @@ dialog h3{font-size:20px;margin-bottom:4px}
     const d = el("div", {className:"toast", textContent:t}); document.body.append(d);
     setTimeout(() => d.remove(), 1800);
   }
-  async function copy(t){
-    try { await navigator.clipboard.writeText(t); toast("已複製"); }
+  async function copy(t, okMsg){
+    okMsg = okMsg || "已複製";
+    try { await navigator.clipboard.writeText(t); toast(okMsg); }
     catch(e) {
       const ta = el("textarea", {value:t}); document.body.append(ta); ta.select();
       let ok = false; try { ok = document.execCommand("copy"); } catch(_) {}
-      ta.remove(); toast(ok ? "已複製" : "複製失敗，請手動選取");
+      ta.remove(); toast(ok ? okMsg : "複製失敗，請手動選取");
     }
   }
   // 對外分享用網址：代碼/（有專屬 LINE／FB 縮圖，打開後自動進 ?c=代碼）。新增社區要跑 tools/make_share.py
@@ -319,6 +320,10 @@ dialog h3{font-size:20px;margin-bottom:4px}
           if (v) kv.append(el("dt", {textContent:k}), el("dd", {textContent:v}));
         });
         // 對外貼文用：社區、時間、地點、報名連結（有縮網址就用縮網址）
+        // 宣傳 DM：config.js 的 DM_TEMPLATE 換上各社區資料
+        const dm = (CFG.DM_TEMPLATE || []).join("\n")
+          .replace(/\{社區\}/g, c.name).replace(/\{時間\}/g, c.time || ((CFG.COMMUNITIES || {})[c.code] || {}).time || "").replace(/\{地點\}/g, c.place || ((CFG.COMMUNITIES || {})[c.code] || {}).place || "")
+          .replace(/\{報名網址\}/g, short || url).replace(/\{電話\}/g, CFG.ORG_PHONE || "").replace(/\{主辦\}/g, CFG.ORG_NAME || "");
         const msg = (CFG.EVENT_TITLE || "") + "｜" + c.name + "\n" + (c.time ? "時間：" + c.time + "\n" : "") + (c.place ? "地點：" + c.place + "\n" : "") + "報名：" + (short || url);
         box.append(el("div", {className:"comm"},
           el("div", {className:"comm-h"},
@@ -328,6 +333,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
             el("span", {className:"cnt num", textContent: c.count + (c.cap ? " / " + c.cap : "") + " 人"})),
           kv,
           el("div", {className:"row-btns"},
+            dm ? el("button", {type:"button", className:"btn btn-primary btn-sm", textContent:"複製 DM", onclick: () => copy(dm, "已複製 DM，可以直接貼上")}) : null,
             short ? btn("複製縮網址", () => copy(short)) : null,
             btn("複製報名連結", () => copy(url)),
             btn("報名 QR", () => openQr(c.name, short || url, c.code)),
