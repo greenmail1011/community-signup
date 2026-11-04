@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>活動報名｜青銀飛行趣</title>
-<meta name="description" content="青銀無人機體驗課程線上報名，填寫姓名、性別、年齡、手機，報名後加入社區 LINE 群組。">
+<meta name="description" content="青銀無人機體驗課程線上報名，填寫姓名、性別、年齡、手機，報名後加入體驗課程 LINE 群組。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@500;700;900&display=swap">
@@ -139,11 +139,6 @@ input:focus,select:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 
 .qr{width:150px;height:150px;flex:0 0 150px;background:var(--white);padding:8px;border-radius:12px;border:2px solid #9ED9B4}
 .qr svg{width:100%;height:100%;display:block}
 .qr-wrap p{font-size:20px;font-weight:700;color:var(--ink)}
-/* 報名表上方：LINE 群組卡（按鈕＋QR） */
-.line-card{background:#E9F8EF;border:3px solid #9ED9B4;display:flex;flex-direction:column;gap:14px}
-.line-card h2{font-size:28px;color:var(--line-deep);text-align:center}
-.line-card .btn-line{min-height:88px;font-size:29px;letter-spacing:.04em;gap:10px;white-space:nowrap;padding:12px 14px}
-.line-card .next{font-size:19px;font-weight:700;color:var(--ink-2);text-align:center}
 
 footer{text-align:center;color:var(--ink-2);font-size:18px;font-weight:700;display:flex;flex-direction:column;gap:4px;padding-top:8px}
 footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--ring-deep);font-variant-numeric:tabular-nums}
@@ -168,14 +163,6 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
   <section class="card state" id="loading"><div class="spinner" aria-hidden="true"></div><p>載入中…</p></section>
   <section class="card state" id="error" hidden><h2 id="err-title">找不到這個報名頁</h2><p class="muted" id="err-text"></p></section>
 
-
-  <!-- LINE 群組：報名時就能按鈕或掃 QR 加入 -->
-  <section class="card line-card" id="line-card" hidden>
-    <h2>加入社區 LINE 群組</h2>
-    <a class="btn btn-line" id="line-card-btn" href="#"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 3C6.5 3 2 6.6 2 11c0 3.9 3.5 7.2 8.3 7.9.3.1.8.2.9.5.1.3.1.7 0 1l-.1.9c0 .3-.2 1 .9.5s5.9-3.5 8-6C21.3 14.3 22 12.7 22 11c0-4.4-4.5-8-10-8z"/></svg>加入 LINE 群組</a>
-    <div class="qr-wrap"><div class="qr" id="qr-top" role="img" aria-label="LINE 群組 QR code"></div><p>也可以用 LINE 掃這個 QR code 加入</p></div>
-    <p class="next">活動通知都會在群組公告。<br>加入後，記得往下填報名資料 ⬇</p>
-  </section>
 
   <!-- 報名表 -->
   <form class="card" id="form" novalidate hidden>
@@ -230,7 +217,7 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
     </div>
 
     <div class="line-step" id="line-step">
-      <h3>最後一步：加入群組</h3>
+      <h3>最後一步：加入體驗課程群組</h3>
       <a class="btn btn-line" id="line-btn" href="#"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 3C6.5 3 2 6.6 2 11c0 3.9 3.5 7.2 8.3 7.9.3.1.8.2.9.5.1.3.1.7 0 1l-.1.9c0 .3-.2 1 .9.5s5.9-3.5 8-6C21.3 14.3 22 12.7 22 11c0-4.4-4.5-8-10-8z"/></svg>加入 LINE 群組</a>
       <p class="line-tip">按下去會打開 LINE，再按「加入」就完成了</p>
       <div class="qr-wrap"><div class="qr" id="qr" role="img" aria-label="LINE 群組 QR code"></div><p>也可以用 LINE 掃這個 QR code 加入</p></div>
@@ -275,7 +262,7 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
   $("#subtitle").textContent = CFG.EVENT_SUBTITLE || "";
 
   function fail(title, text){
-    show("#loading", false); show("#form", false); show("#line-card", false);
+    show("#loading", false); show("#form", false);
     $("#err-title").textContent = title; $("#err-text").textContent = text || ""; show("#error", true);
   }
 
@@ -328,7 +315,7 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
     if (!code) return fail("請用社區給你的報名連結", "每個社區都有自己的報名網址，請向社區或主辦單位索取。");
 
     // 1) 先用 config.js 的資料立刻顯示，不等 Google
-    if (local) { community = local; renderHero(community); setLineCard(); show("#loading", false); show("#form", true); }
+    if (local) { community = local; renderHero(community); show("#loading", false); show("#form", true); }
 
     // 2) 背景向 Google 確認最新狀態（同時把 Google 端喚醒，送出報名會比較快）
     try {
@@ -339,7 +326,6 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
       }
       const doneShown = !$("#done").hidden;
       community = Object.assign({}, r.community, {line: r.community.line || (local && local.line) || ""});
-      setLineCard();
       renderHero(community);
       if (doneShown) return; // 已經報名完成，就不要再切換畫面
       if (!applyStatus(community)) return;
@@ -434,13 +420,6 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
     };
     if (window.qrcode) go(); else window.addEventListener("load", go, {once:true});
   }
-  // 報名表上方的 LINE 群組卡：有群組連結、而且正在填表時才顯示
-  let lastLine = "";
-  function setLineCard(){
-    const line = community && community.line;
-    show("#line-card", !!line && $("#done").hidden && $("#error").hidden);
-    if (line && line !== lastLine) { $("#line-card-btn").href = line; drawQR("#qr-top", line); lastLine = line; }
-  }
 
   function renderDone(r, v){
     $("#done-title").textContent = r.dup ? "你已經報名過囉！" : "報名成功！";
@@ -454,7 +433,7 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
       $("#say").textContent = "加入後請在群組說一聲：「我是 " + v.name + "，已報名」，我們就能認出你。";
       drawQR("#qr", line);
     }
-    show("#form", false); show("#done", true); show("#line-card", false);
+    show("#form", false); show("#done", true);
     window.scrollTo({top: $("#done").offsetTop - 12, behavior:"smooth"});
   }
 
@@ -462,7 +441,7 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
     form.reset();
     ["name","gender","age","phone","consent"].forEach(k => setErr(k, ""));
     $("#f-consent").checked = true; // 同一位填寫者，保留同意
-    show("#done", false); show("#form", true); setLineCard();
+    show("#done", false); show("#form", true);
     form.scrollIntoView({behavior:"smooth"});
     setTimeout(() => $("#f-name").focus({preventScroll:true}), 300);
   });
