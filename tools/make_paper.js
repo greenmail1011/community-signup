@@ -16,7 +16,9 @@ const { chromium } = require("playwright");
 
 const ROOT = path.resolve(__dirname, "..");
 const BASE_URL = "https://greenmail1011.github.io/community-signup/";
-const ROWS = 10;
+const ROWS = 10;          // 第 1 頁格數（上面有活動資訊與 QR）
+const MORE_PAGES = 2;     // 第 2 頁之後：只有接續編號的名單，共幾頁
+const MORE_ROWS = 18;     // 第 2 頁之後每頁格數
 
 function readConfig() {
   const ctx = { window: {} };
@@ -28,10 +30,20 @@ const esc = s => String(s || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "
 
 function page(cfg, code, c) {
   const signup = c.short || BASE_URL + code + "/";
-  const rows = Array.from({ length: ROWS }, (_, i) => `
-    <tr><td class="no">${i + 1}</td><td></td>
+  const total = 1 + MORE_PAGES;
+  const rowsHtml = (from, n) => Array.from({ length: n }, (_, i) => `
+    <tr><td class="no">${from + i}</td><td></td>
       <td class="sex"><span class="box"></span>男　<span class="box"></span>女</td>
       <td></td><td></td><td class="done"></td></tr>`).join("");
+  const head = `<colgroup><col style="width:8%"><col style="width:22%"><col style="width:19%"><col style="width:10%"><col style="width:29%"><col style="width:12%"></colgroup>
+  <tr><th>編號</th><th>姓名</th><th>性別</th><th>年齡</th><th>手機</th><th>已登錄<div style="font-size:8.5pt;font-weight:700">工作人員勾</div></th></tr>`;
+  const rows = rowsHtml(1, ROWS);
+  // 第 2 頁之後：只有一行小字（社區＋頁數，避免紙張混在一起）＋接續編號的名單
+  let more = "";
+  for (let pg = 2, start = ROWS + 1; pg <= total; pg++, start += MORE_ROWS) {
+    more += `<section class="more"><div class="pghead"><span>${esc(c.name)}｜${esc(cfg.EVENT_TITLE)} 紙本報名表（續）</span><span>第 ${pg}／${total} 頁</span></div>
+<table>${head}${rowsHtml(start, MORE_ROWS)}</table></section>`;
+  }
   return `<!doctype html><html lang="zh-Hant-TW"><head><meta charset="utf-8">
 <style>
 @page { size: A4; margin: 12mm 12mm 10mm; }
@@ -58,6 +70,8 @@ td.done { background: #F6F8FB; }
 .qr svg { width: 24mm; height: 24mm; flex: 0 0 24mm; }
 .qr b { display: block; font-size: 13pt; }
 .qr span { font-size: 10pt; color: #3A4D73; word-break: break-all; }
+.more { break-before: page; }
+.pghead { display: flex; justify-content: space-between; font-size: 11pt; font-weight: 700; color: #3A4D73; border-bottom: 2px solid #1F5FD1; padding-bottom: 4px; margin-bottom: 6px; }
 .foot { margin-top: 6px; display: flex; justify-content: space-between; font-size: 10.5pt; color: #3A4D73; font-weight: 700; }
 </style></head><body>
 <div class="top">
@@ -72,16 +86,13 @@ td.done { background: #F6F8FB; }
   <dt>地點</dt><dd>${esc(c.place)}</dd>
 </dl>
 <p class="note">請用正楷填寫，填好交給社區或協會工作人員，我們會幫您完成線上登記。手機請寫 09 開頭 10 碼。</p>
-<table>
-  <colgroup><col style="width:8%"><col style="width:22%"><col style="width:19%"><col style="width:10%"><col style="width:29%"><col style="width:12%"></colgroup>
-  <tr><th>編號</th><th>姓名</th><th>性別</th><th>年齡</th><th>手機</th><th>已登錄<div style="font-size:8.5pt;font-weight:700">工作人員勾</div></th></tr>
-  ${rows}
-</table>
+<table>${head}${rows}</table>
 <div class="bottom">
   <div class="qr"><div id="q1"></div><div><b>手機掃描線上報名</b><span>${esc(signup)}</span></div></div>
   ${c.line ? `<div class="qr"><div id="q2"></div><div><b>加入體驗課程 LINE 群組</b><span>活動通知、臨時異動都會在群組公告</span></div></div>` : ""}
 </div>
-<div class="foot"><span>報名問題請來電：${esc(cfg.ORG_PHONE)}</span><span>活動企劃｜${esc(cfg.ORG_NAME)}</span></div>
+<div class="foot"><span>報名問題請來電：${esc(cfg.ORG_PHONE)}</span><span>第 1／${total} 頁</span></div>
+${more}
 <script>${fs.readFileSync(path.join(__dirname, "vendor", "qrcode-generator-1.4.4.js"), "utf8")}</script>
 <script>
 function qr(id, text){ var el=document.getElementById(id); if(!el) return; var q=qrcode(0,"M"); q.addData(text); q.make(); el.innerHTML=q.createSvgTag({cellSize:4,margin:0,scalable:true}); }
