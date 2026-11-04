@@ -52,7 +52,7 @@ td.no { font-weight: 900; color: #3A4D73; }
 td.sex { font-size: 13pt; white-space: nowrap; }
 .box { display: inline-block; width: 4.5mm; height: 4.5mm; border: 1.5px solid #0E2A5E; vertical-align: -0.6mm; margin-left: 4px; }
 td.done { background: #F6F8FB; }
-.consent { margin-top: 6px; font-size: 11pt; font-weight: 700; }
+
 .bottom { margin-top: 6px; display: flex; gap: 14px; align-items: stretch; }
 .qr { display: flex; gap: 10px; align-items: center; border: 1.5px solid #C9DCF7; border-radius: 10px; padding: 8px 10px; flex: 1; }
 .qr svg { width: 24mm; height: 24mm; flex: 0 0 24mm; }
@@ -77,7 +77,6 @@ td.done { background: #F6F8FB; }
   <tr><th>編號</th><th>姓名</th><th>性別</th><th>年齡</th><th>手機</th><th>已登錄<div style="font-size:8.5pt;font-weight:700">工作人員勾</div></th></tr>
   ${rows}
 </table>
-<p class="consent">☐ 以上報名者同意主辦單位使用這些資料，只用來聯絡這次活動。</p>
 <div class="bottom">
   <div class="qr"><div id="q1"></div><div><b>手機掃描線上報名</b><span>${esc(signup)}</span></div></div>
   ${c.line ? `<div class="qr"><div id="q2"></div><div><b>加入體驗課程 LINE 群組</b><span>活動通知、臨時異動都會在群組公告</span></div></div>` : ""}
