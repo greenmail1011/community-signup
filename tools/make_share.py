@@ -173,10 +173,12 @@ def main():
     for code, c in comms.items():
         poster = os.path.join(ROOT, "poster-%s.jpg" % code)
         first_poster = first_poster or (poster if os.path.exists(poster) else None)
-        make_image(os.path.join(ROOT, "og-%s.jpg" % code), ev, c, poster)
+        # 社區可以有自己的 title／subtitle（例如師訓），蓋過 EVENT_TITLE；title 裡的 | 只是網頁上分色用
+        ev_c = dict(ev, title=(c.get("title") or ev["title"]).replace("|", ""), subtitle=c.get("subtitle") or ev["subtitle"])
+        make_image(os.path.join(ROOT, "og-%s.jpg" % code), ev_c, c, poster)
         os.makedirs(os.path.join(ROOT, code), exist_ok=True)
-        title = "%s報名｜%s" % (ev["title"], c["name"])
-        desc = "%s。時間：%s；地點：%s。線上填姓名、年齡、手機就完成報名。" % (ev["subtitle"], c.get("time", ""), c.get("place", ""))
+        title = "%s報名｜%s" % (ev_c["title"], c["name"])
+        desc = "%s。時間：%s；地點：%s。線上填姓名、年齡、手機就完成報名。" % (ev_c["subtitle"], c.get("time", ""), c.get("place", ""))
         page = STUB.format(title=html.escape(title), desc=html.escape(desc), org=html.escape(ev["org"]),
                            url=BASE_URL + code + "/", img=BASE_URL + "og-%s.jpg" % code, code=code)
         open(os.path.join(ROOT, code, "index.html"), "w", encoding="utf-8").write(page)

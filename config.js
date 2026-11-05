@@ -16,10 +16,14 @@ window.APP_CONFIG = {
 
   // 各社區活動資料：報名頁會「立刻」用這裡的資料顯示，不必等 Google 回應（約 2～5 秒）。
   // 背景仍會向 Google 試算表確認；試算表「社區設定」改了時間地點、截止或額滿，載入後會自動更新。
-  // 新增社區時兩邊都加，網頁才會一打開就出現。line 是 LINE 群組邀請連結（試算表沒填時用這裡的）；short 是對外縮網址（PicSee，指向 代碼/ 分享網址），後台會顯示並用在報名訊息與 QR。
+  // 新增社區時兩邊都加（title／subtitle 選填，只在 config.js：給不是「青銀飛行趣」的場次用，例如師訓），網頁才會一打開就出現。line 是 LINE 群組邀請連結（試算表沒填時用這裡的）；short 是對外縮網址（PicSee，指向 代碼/ 分享網址），後台會顯示並用在報名訊息與 QR。
   COMMUNITIES: {
     beimen:  { name: "北門社區發展協會", time: "11/6（五）上午 9:30–10:30",   place: "新竹市經國路二段159巷24號", line: "https://line.me/ti/g/8ERJA5ttfh", short: "https://pse.is/9u2v3j" },
-    jiugang: { name: "舊港社區發展協會", time: "11/19（四）上午 10:00–11:00", place: "新竹市北區舊港里舊港54號",  line: "https://line.me/ti/g/uSD9HVwXPq", short: "https://pse.is/9u3ck2" }
+    jiugang: { name: "舊港社區發展協會", time: "11/19（四）上午 10:00–11:00", place: "新竹市北區舊港里舊港54號",  line: "https://line.me/ti/g/uSD9HVwXPq", short: "https://pse.is/9u3ck2" },
+    dingpu:   { name: "逢春長青會・頂埔里",   time: "11/9（一）上午 10:30–11:30",  place: "頂埔市民活動中心（新竹市經國路三段5號）", line: "", short: "" },
+    dazhuang: { name: "香山社區發展協會",     time: "11/25（三）上午 10:00–11:00", place: "大庄市民活動中心（新竹市宮口街30號）",   line: "", short: "" },
+    // 師訓（對象是老師）：title／subtitle 會蓋過上面的 EVENT_TITLE／EVENT_SUBTITLE；title 裡的「|」後面那段用橘色
+    shanjia:  { name: "苗栗山佳國小", time: "12/18（五）", place: "苗栗山佳國小", line: "", short: "", title: "無人機|師訓", subtitle: "無人機教師研習｜苗栗山佳國小" }
   }
 };
 // 各社區海報：放在同一層、檔名 poster-社區代碼.jpg（例如 poster-beimen.jpg），沒有就不顯示。

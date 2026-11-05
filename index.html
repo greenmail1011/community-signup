@@ -245,7 +245,7 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
 </main>
 
 
-<script src="config.js?v=9"></script>
+<script src="config.js?v=10"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (function(){
@@ -262,13 +262,22 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
     $("#top-tel").textContent = "☎ " + CFG.ORG_PHONE; $("#top-tel").href = tel;
     $("#f-tel").textContent = CFG.ORG_PHONE; $("#f-tel").href = tel;
   }
-  if (CFG.EVENT_TITLE) {
-    const t = CFG.EVENT_TITLE;
-    // 「青銀飛行趣」→ 後三個字橘色
+  // 標題：社區有自己的 title／subtitle（例如師訓）就用社區的，否則用 EVENT_TITLE
+  const evTitle = c => ((c && LOCAL_EV[c.code] && LOCAL_EV[c.code].title) || CFG.EVENT_TITLE || "");
+  const evSub = c => ((c && LOCAL_EV[c.code] && LOCAL_EV[c.code].subtitle) || CFG.EVENT_SUBTITLE || "");
+  const LOCAL_EV = CFG.COMMUNITIES || {};
+  function setTitle(c){
+    const raw = evTitle(c);
+    if (!raw) return;
+    // 「無人機|師訓」→ | 後面橘色；沒有 | 就後三個字橘色（「青銀飛行趣」）
+    const k = raw.indexOf("|");
+    const a = k >= 0 ? raw.slice(0, k) : (raw.length > 3 ? raw.slice(0, -3) : "");
+    const b = k >= 0 ? raw.slice(k + 1) : (raw.length > 3 ? raw.slice(-3) : raw);
     $("#title").innerHTML = "";
-    $("#title").append(t.length > 3 ? t.slice(0, -3) : "", Object.assign(document.createElement("b"), {textContent: t.length > 3 ? t.slice(-3) : t}));
+    $("#title").append(a, Object.assign(document.createElement("b"), {textContent: b}));
+    $("#subtitle").textContent = evSub(c);
   }
-  $("#subtitle").textContent = CFG.EVENT_SUBTITLE || "";
+  setTitle(null);
 
   function fail(title, text){
     show("#loading", false); show("#form", false);
@@ -295,7 +304,8 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
       info.append(d);
     });
     info.hidden = !info.children.length;
-    document.title = (CFG.EVENT_TITLE || "活動") + "報名｜" + c.name;
+    setTitle(c);
+    document.title = (evTitle(c).replace("|", "") || "活動") + "報名｜" + c.name;
     // 海報：poster-社區代碼.jpg，有就整張顯示在最上面
     const src = "poster-" + encodeURIComponent(c.code) + ".jpg?v=3"; // 換海報時把 v 加 1（跟上面 preload 一起改）
     const img = $("#poster");

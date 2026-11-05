@@ -29,6 +29,8 @@ function readConfig() {
 const esc = s => String(s || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 function page(cfg, code, c) {
+  // 社區可以有自己的 title／subtitle（例如師訓）；| 只是網頁上分色用
+  cfg = Object.assign({}, cfg, { EVENT_TITLE: (c.title || cfg.EVENT_TITLE || "").replace("|", ""), EVENT_SUBTITLE: c.subtitle || cfg.EVENT_SUBTITLE });
   const signup = c.short || BASE_URL + code + "/";
   const total = 1 + MORE_PAGES;
   const rowsHtml = (from, n) => Array.from({ length: n }, (_, i) => `

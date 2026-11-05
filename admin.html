@@ -192,7 +192,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
   </div>
 </dialog>
 
-<script src="config.js?v=9"></script>
+<script src="config.js?v=10"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (function(){
@@ -356,7 +356,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
         // 對外貼文用：社區、時間、地點、報名連結（有縮網址就用縮網址）
         // DM 圖＝該社區海報 poster-代碼.jpg
         const dmImg = new URL("poster-" + encodeURIComponent(c.code) + ".jpg", location.href).href;
-        const msg = (CFG.EVENT_TITLE || "") + "｜" + c.name + "\n" + (c.time ? "時間：" + c.time + "\n" : "") + (c.place ? "地點：" + c.place + "\n" : "") + "報名：" + (short || url);
+        const msg = (((CFG.COMMUNITIES || {})[c.code] || {}).title || CFG.EVENT_TITLE || "").replace("|", "") + "｜" + c.name + "\n" + (c.time ? "時間：" + c.time + "\n" : "") + (c.place ? "地點：" + c.place + "\n" : "") + "報名：" + (short || url);
         box.append(el("div", {className:"comm"},
           el("div", {className:"comm-h"},
             el("h3", {textContent:c.name}),
