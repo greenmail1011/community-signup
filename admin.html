@@ -219,10 +219,18 @@ dialog h3{font-size:20px;margin-bottom:4px}
   const el = (tag, props, ...kids) => { const e = Object.assign(document.createElement(tag), props || {}); kids.forEach(k => k != null && e.append(k)); return e; };
   const SKEY = "community-signup-key";
   const ss = {
-    // 存 {key:"密碼"} 或 {idToken:"Google 登入憑證"}；舊版只存密碼字串
-    get(){ try { const v = sessionStorage.getItem(SKEY) || ""; if (!v) return null; try { const o = JSON.parse(v); if (o && typeof o === "object") return o; } catch(_) {} return {key:v}; } catch(e) { return null; } },
-    set(v){ try { sessionStorage.setItem(SKEY, JSON.stringify(v)); } catch(e) {} },
-    del(){ try { sessionStorage.removeItem(SKEY); } catch(e) {} }
+    // 記在這台裝置（localStorage），關掉瀏覽器也不用重新登入；按「登出」才清掉。
+    // 存 {key:"密碼"} 或 {session:"Google 登入後發的記住登入憑證"}；舊版存在 sessionStorage、或只存密碼字串
+    get(){
+      let v = "";
+      try { v = localStorage.getItem(SKEY) || ""; } catch(e) {}
+      if (!v) { try { v = sessionStorage.getItem(SKEY) || ""; } catch(e) {} }
+      if (!v) return null;
+      try { const o = JSON.parse(v); if (o && typeof o === "object") return o; } catch(_) {}
+      return {key:v};
+    },
+    set(v){ try { localStorage.setItem(SKEY, JSON.stringify(v)); } catch(e) {} },
+    del(){ try { localStorage.removeItem(SKEY); } catch(e) {} try { sessionStorage.removeItem(SKEY); } catch(e) {} }
   };
   let CRED = null, DATA = null, FILTER = "all";
 
@@ -296,12 +304,12 @@ dialog h3{font-size:20px;margin-bottom:4px}
     return r.error === "wrong_key" ? "密碼不對，請再確認一次"
       : r.error === "locked" ? "錯誤次數太多，請 10 分鐘後再試"
       : r.error === "not_admin" ? "這個 Google 帳號（" + (r.email || "") + "）不在協會成員名單裡，請洽系統管理員加入。"
-      : r.error === "google_invalid" ? "Google 登入已過期，請再按一次「使用 Google 帳戶登入」"
+      : r.error === "google_invalid" || r.error === "session_invalid" ? "登入已過期，請再按一次「使用 Google 帳戶登入」"
       : "讀取失敗，請稍後再試";
   }
 
   async function login(cred, silent){
-    const google = !!cred.idToken;
+    const google = !!(cred.idToken || cred.session);
     const err = google ? $("#g-err") : $("#login-err");
     $("#g-err").hidden = true; $("#login-err").hidden = true;
     if (!API) { err.textContent = "尚未設定 API 網址（config.js 的 API_URL）"; err.hidden = false; return; }
@@ -317,6 +325,8 @@ dialog h3{font-size:20px;margin-bottom:4px}
         return;
       }
       err.hidden = true;
+      // Google 登入成功 → 改記住伺服器發的 30 天憑證（Google 憑證本身 1 小時就過期）
+      if (r.session) cred = {session: r.session};
       CRED = cred; ss.set(cred); DATA = r; DATA.at = new Date();
       $("#login").hidden = true; $("#app").hidden = false;
       $("#refresh").hidden = false; $("#logout").hidden = false;
@@ -332,7 +342,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
   $("#login").addEventListener("submit", e => { e.preventDefault(); const k = $("#key").value.trim(); if (k) login({key:k}); });
   $("#logout").addEventListener("click", () => {
     ss.del();
-    try { if (CRED && CRED.idToken && window.google) google.accounts.id.disableAutoSelect(); } catch(e) {}
+    try { if (CRED && (CRED.idToken || CRED.session) && window.google) google.accounts.id.disableAutoSelect(); } catch(e) {}
     location.reload();
   });
 
@@ -360,8 +370,8 @@ dialog h3{font-size:20px;margin-bottom:4px}
     const b = $("#refresh"); b.disabled = true; b.textContent = "更新中…";
     try {
       const r = await load(CRED);
-      if (r.ok) { DATA = r; DATA.at = new Date(); render(); toast("已更新"); }
-      else if (r.error === "google_invalid") {
+      if (r.ok) { if (r.session) { CRED = {session: r.session}; ss.set(CRED); } DATA = r; DATA.at = new Date(); render(); toast("已更新"); }
+      else if (r.error === "google_invalid" || r.error === "session_invalid") {
         ss.del(); $("#app").hidden = true; $("#login").hidden = false;
         $("#refresh").hidden = true; $("#logout").hidden = true; $("#role").hidden = true;
         $("#g-err").textContent = errText(r); $("#g-err").hidden = false;
@@ -558,7 +568,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
   dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
 
   const saved = ss.get();
-  if (saved && (saved.key || saved.idToken)) login(saved, true);
+  if (saved && (saved.key || saved.idToken || saved.session)) login(saved, true);
 })();
 </script>
 </body>

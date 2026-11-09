@@ -204,7 +204,12 @@ function data_(b) {
   const all = communities_();
   let role, codes, who = '';
 
-  if (b.idToken) {
+  if (b.session) {
+    // 記住登入：之前 Google 登入後發的登入憑證（30 天有效，每次使用自動延長）
+    const s = checkSession_(String(b.session));
+    if (!s) return { ok: false, error: 'session_invalid' };
+    role = 'admin'; who = s;
+  } else if (b.idToken) {
     // Google 登入：向 Google 驗證這張登入憑證，再比對管理者名單
     const why = {};
     const g = googleEmail_(String(b.idToken), why);
@@ -250,6 +255,7 @@ function data_(b) {
     ok: true,
     role: role,
     who: who, // Google 登入時的帳號
+    session: who ? makeSession_(who) : undefined, // Google 登入者：發（或延長）記住登入憑證
     sheet: sheet, // 只有管理者拿得到試算表連結
     communities: comms.map(function (c) {
       const o = { code: c.code, name: c.name, time: c.time, place: c.place, line: c.line, open: c.open, cap: c.cap, count: count[c.code] || 0 };
@@ -269,6 +275,41 @@ function data_(b) {
 function authorizeExternal() {
   const r = UrlFetchApp.fetch('https://oauth2.googleapis.com/tokeninfo?id_token=test', { muteHttpExceptions: true });
   Logger.log('外部連線正常（Google 回應代碼 ' + r.getResponseCode() + '，400 是正常的）');
+}
+
+/* ---------------- 記住登入（Google 登入後 30 天內免再登入） ----------------
+ * 憑證＝ base64(email|到期毫秒) + '.' + HMAC-SHA256 簽章；密鑰存在指令碼屬性 SESSION_SECRET（第一次自動產生）。
+ * 想讓所有裝置立刻登出：刪掉指令碼屬性 SESSION_SECRET 即可（下次會產生新的）。
+ * 帳號從管理者名單移除後，憑證也立即失效。
+ */
+const SESSION_DAYS = 30;
+function sessionSecret_() {
+  const props = PropertiesService.getScriptProperties();
+  let k = props.getProperty('SESSION_SECRET');
+  if (!k) { k = Utilities.getUuid() + Utilities.getUuid(); props.setProperty('SESSION_SECRET', k); }
+  return k;
+}
+function sessionSig_(payload) {
+  return Utilities.base64EncodeWebSafe(Utilities.computeHmacSha256Signature(payload, sessionSecret_())).replace(/=+$/, '');
+}
+function makeSession_(email) {
+  const payload = String(email).toLowerCase() + '|' + (Date.now() + SESSION_DAYS * 86400000);
+  return Utilities.base64EncodeWebSafe(payload, Utilities.Charset.UTF_8).replace(/=+$/, '') + '.' + sessionSig_(payload);
+}
+function checkSession_(tok) {
+  if (!tok || tok.length > 1024 || tok.indexOf('.') < 0) return null;
+  const parts = tok.split('.');
+  let payload;
+  try {
+    let b64 = parts[0]; while (b64.length % 4) b64 += '=';
+    payload = Utilities.newBlob(Utilities.base64DecodeWebSafe(b64)).getDataAsString('UTF-8');
+  } catch (err) { return null; }
+  if (sessionSig_(payload) !== parts[1]) return null;
+  const i = payload.lastIndexOf('|');
+  const email = payload.slice(0, i), exp = Number(payload.slice(i + 1));
+  if (!(exp > Date.now())) return null;
+  if (adminEmails_().indexOf(email) < 0) return null;
+  return email;
 }
 
 /** 管理者 Google 帳號名單（小寫） */
