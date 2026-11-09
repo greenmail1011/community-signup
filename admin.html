@@ -91,7 +91,15 @@ input:focus{border-color:var(--blue);outline:none}
 .comm{border:2px solid var(--border);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px;background:#FFFFFF}
 .comm-h{display:flex;align-items:flex-start;gap:8px}
 .comm-h .ttl{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:4px}
-.comm-h h3{font-size:18px;font-weight:900;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.comm-h h3{font-size:18px;font-weight:900;max-width:100%;display:flex;align-items:center;gap:8px;min-width:0}
+.comm-h h3 .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.seq{flex:none;font-size:12px;font-weight:900;color:var(--blue);border:1.5px solid var(--blue);border-radius:999px;padding:1px 8px;line-height:1.4}
+.seq.next{color:#FFFFFF;background:var(--ring);border-color:var(--ring)}
+/* 進行中（左）／已完成（右）並排；手機改上下 */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.split .comms{grid-template-columns:1fr}
+.col{min-width:0}
+@media (max-width:760px){.split{grid-template-columns:1fr}}
 .comm-h .cnt{margin-left:auto;font-weight:900;color:var(--ring);font-size:22px;white-space:nowrap;line-height:1.2}
 .kv{line-height:1.5}
 .kv dd.clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:3em}
@@ -115,10 +123,11 @@ input:focus{border-color:var(--blue);outline:none}
 .grp{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:900;margin:6px 0 12px}
 .grp::before{content:"";width:6px;height:22px;border-radius:3px;background:var(--blue)}
 .grp .n{font-size:13px;font-weight:700;color:#FFFFFF;background:var(--blue);border-radius:999px;padding:1px 10px}
-.grp.done{margin-top:28px;color:#5B6779}
+.grp.done{color:#5B6779}
 .grp.done::before{background:#9AA6B6}
 .grp.done .n{background:#9AA6B6}
-#comms-done{background:#EEF2F7;border-radius:16px;padding:12px}
+.col-done{background:#EEF2F7;border-radius:16px;padding:12px}
+.col-done .grp{margin-top:0}
 .comm.done{background:#F6F8FB;border-color:#DCE3EC}
 .tag.end{color:#FFFFFF;background:#7A879B;border-color:#7A879B}
 
@@ -180,10 +189,16 @@ dialog h3{font-size:20px;margin-bottom:4px}
     <section class="card" id="comm-card" hidden>
       <h2>各社區報名頁</h2>
       <!-- 依活動時間自動分組：進行中（近→遠）、已完成（新→舊）；活動結束時間一過就移到已完成 -->
-      <h3 class="grp" id="grp-up">進行中 <span class="n" id="n-up"></span></h3>
-      <div class="comms" id="comms"></div>
-      <h3 class="grp done" id="grp-done" hidden>已完成 <span class="n" id="n-done"></span></h3>
-      <div class="comms" id="comms-done" hidden></div>
+      <div class="split">
+        <div class="col">
+          <h3 class="grp" id="grp-up">進行中 <span class="n" id="n-up"></span></h3>
+          <div class="comms" id="comms"></div>
+        </div>
+        <div class="col col-done">
+          <h3 class="grp done" id="grp-done">已完成 <span class="n" id="n-done"></span></h3>
+          <div class="comms" id="comms-done"></div>
+        </div>
+      </div>
     </section>
 
     <section class="card" id="mine-card" hidden>
@@ -408,12 +423,13 @@ dialog h3{font-size:20px;margin-bottom:4px}
       const groups = sortComms(DATA.communities);
       const boxUp = $("#comms"), boxDone = $("#comms-done");
       boxUp.innerHTML = ""; boxDone.innerHTML = "";
-      $("#n-up").textContent = groups.up.length + " 場";
+      $("#n-up").textContent = "還有 " + groups.up.length + " 場";
       $("#n-done").textContent = groups.done.length + " 場";
-      $("#grp-done").hidden = boxDone.hidden = !groups.done.length;
+      if (!groups.done.length) boxDone.append(el("p", {className:"muted", textContent:"還沒有已完成的場次"}));
       if (!groups.up.length) boxUp.append(el("p", {className:"muted", textContent:"目前沒有進行中的場次"}));
       groups.up.concat(groups.done).forEach(c => {
         const ended = groups.done.includes(c), box = ended ? boxDone : boxUp;
+        const seq = ended ? 0 : groups.up.indexOf(c) + 1; // 進行中依日期排的序號：1 = 下一場
         const url = regUrl(c.code);
         const short = ((CFG.COMMUNITIES || {})[c.code] || {}).short || "";  // 縮網址（config.js 的 short）
         const kv = el("dl", {className:"kv"});
@@ -431,7 +447,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
         box.append(el("div", {className:"comm" + (ended ? " done" : "")},
           el("div", {className:"comm-h"},
             el("div", {className:"ttl"},
-              el("h3", {textContent:c.name, title:c.name}),
+              el("h3", {}, seq ? el("span", {className:"seq" + (seq === 1 ? " next" : ""), textContent: seq === 1 ? "下一場" : "第 " + seq + " 場"}) : null, el("span", {className:"nm", textContent:c.name, title:c.name})),
               ended ? el("span", {className:"tag end", textContent:"已完成"})
                     : el("span", {className:"tag " + (c.open ? "on" : "off"), textContent: c.open ? "開放報名" : "已截止"})),
             el("span", {className:"cnt num", textContent: c.count + (c.cap ? " / " + c.cap : "") + " 人"})),
