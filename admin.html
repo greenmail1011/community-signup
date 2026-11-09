@@ -94,6 +94,47 @@ input:focus{border-color:var(--blue);outline:none}
 .comm-h h3 .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .seq{flex:none;font-size:12px;font-weight:900;color:var(--blue);border:1.5px solid var(--blue);border-radius:999px;padding:1px 8px;line-height:1.4}
 .seq.next{color:#FFFFFF;background:var(--ring);border-color:var(--ring)}
+/* 標題列＋呈現方式切換 */
+.comm-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.comm-top h2{margin:0}
+.views{margin-left:auto;display:inline-flex;border:2px solid var(--blue);border-radius:999px;overflow:hidden}
+.views button{font:inherit;font-size:14px;font-weight:700;padding:5px 14px;border:0;background:#FFFFFF;color:var(--blue);cursor:pointer}
+.views button+button{border-left:2px solid var(--blue)}
+.views button[aria-pressed="true"]{background:var(--blue);color:#FFFFFF}
+/* 下一場橫幅 */
+.hero-next{all:unset;box-sizing:border-box;cursor:pointer;width:100%;display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px;padding:14px 16px;border-radius:16px;color:#FFFFFF;background:linear-gradient(120deg,#F26B0F,#FF9A3D);box-shadow:0 10px 22px -12px rgba(242,107,15,.8)}
+.hero-next:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.hn-k{font-size:13px;font-weight:900;background:#FFFFFF;color:#C24F00;border-radius:999px;padding:3px 12px}
+.hn-main{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.hn-name{font-size:20px;font-weight:900}
+.hn-time{font-size:17px;font-weight:700}
+.hn-side{display:flex;flex-direction:column;align-items:flex-end;gap:2px;margin-left:auto}
+.hn-days{font-size:22px;font-weight:900}
+.hn-cnt{font-size:14px;font-weight:700;opacity:.95}
+/* 清單裡的下一場卡片 */
+.comm.is-next{border:3px solid var(--ring);background:#FFF6EE}
+.comm.is-next .when{font-size:19px;color:#C24F00}
+.dleft{flex:none;font-size:12px;font-weight:900;color:#C24F00;background:#FFE3CC;border-radius:999px;padding:1px 8px}
+.comm.flash{animation:flash 1.6s ease}
+@keyframes flash{0%,60%{box-shadow:0 0 0 4px rgba(31,95,209,.45)}100%{box-shadow:none}}
+/* 週／月曆 */
+.cal-nav{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.cal-nav b{font-size:17px;min-width:9em;text-align:center}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border:1.5px solid var(--border);border-radius:12px;overflow:hidden;background:var(--border);gap:1px}
+.cal-h{background:#F3F7FC;text-align:center;font-size:13px;font-weight:700;color:var(--muted);padding:4px 0}
+.cal-d{background:#FFFFFF;min-height:86px;padding:4px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.cal-grid.week .cal-d{min-height:180px}
+.cal-d.out{background:#F8FAFC}.cal-d.out .cal-n{opacity:.45}
+.cal-n{font-size:12px;font-weight:700;color:var(--muted)}
+.cal-d.today .cal-n{color:#FFFFFF;background:var(--blue);border-radius:999px;padding:0 7px;align-self:flex-start}
+.ev{font:inherit;text-align:left;cursor:pointer;border:0;border-radius:6px;padding:3px 5px;font-size:12px;line-height:1.3;background:#E3EDFF;color:#0E2A5E;display:flex;flex-wrap:wrap;gap:0 4px;min-width:0}
+.ev-t{font-weight:900}.ev-n{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.ev.next{background:var(--ring);color:#FFFFFF;box-shadow:0 0 0 2px #FFD2AE}
+.ev-k{width:100%;font-size:11px}
+.ev.done{background:#E9EDF2;color:#7A879B}
+.cal-grid.week .ev{font-size:13px;flex-direction:column;flex-wrap:nowrap}
+.cal-grid.week .ev-n{white-space:normal}
+@media (max-width:640px){.hero-next{gap:8px 12px}.hn-name{font-size:18px}.hn-time{font-size:15px}.hn-side{width:100%;flex-direction:row;justify-content:space-between;align-items:baseline}.hn-days{font-size:19px}.ev-k{white-space:nowrap}.cal-d{min-height:64px}.ev-t{display:none}.cal-grid.week .cal-d{min-height:120px}}
 /* 進行中（左）／已完成（右）並排；手機改上下 */
 .split{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
 .split .comms{grid-template-columns:1fr;gap:8px}
@@ -186,9 +227,18 @@ dialog h3{font-size:20px;margin-bottom:4px}
     <section class="stats" id="stats" aria-label="報名統計"></section>
 
     <section class="card" id="comm-card" hidden>
-      <h2>各社區報名頁</h2>
-      <!-- 依活動時間自動分組：進行中（近→遠）、已完成（新→舊）；活動結束時間一過就移到已完成 -->
-      <div class="split">
+      <div class="comm-top">
+        <h2>各社區報名頁</h2>
+        <div class="views" role="group" aria-label="呈現方式">
+          <button type="button" data-v="list">清單</button><button type="button" data-v="week">週</button><button type="button" data-v="month">月</button>
+        </div>
+      </div>
+      <!-- 下一場：最醒目的橫幅，點了展開那張卡片 -->
+      <div id="next-hero"></div>
+      <!-- 週／月曆 -->
+      <div id="cal" hidden></div>
+      <!-- 清單：依活動時間自動分組：進行中（近→遠）、已完成（新→舊）；活動結束時間一過就移到已完成 -->
+      <div class="split" id="list-view">
         <div class="col">
           <h3 class="grp" id="grp-up">進行中 <span class="n" id="n-up"></span></h3>
           <div class="comms" id="comms"></div>
@@ -440,11 +490,13 @@ dialog h3{font-size:20px;margin-bottom:4px}
         // DM 圖＝該社區海報 poster-代碼.jpg
         const dmImg = new URL("poster-" + encodeURIComponent(c.code) + ".jpg", location.href).href;
         const msg = (((CFG.COMMUNITIES || {})[c.code] || {}).title || CFG.EVENT_TITLE || "").replace("|", "") + "｜" + c.name + "\n" + (c.time ? "時間：" + c.time + "\n" : "") + (c.place ? "地點：" + c.place + "\n" : "") + "報名：" + (short || url);
-        box.append(el("div", {className:"comm" + (ended ? " done" : "")},
+        const dleft = seq === 1 ? daysLeft(c) : null;
+        box.append(el("div", {className:"comm" + (ended ? " done" : "") + (seq === 1 ? " is-next" : ""), id:"comm-" + c.code},
           el("div", {className:"comm-h"},
             // 精簡：只在「已截止」時才顯示狀態標籤（已完成的在右欄，不再標）
             el("h3", {}, seq ? el("span", {className:"seq" + (seq === 1 ? " next" : ""), textContent: seq === 1 ? "下一場" : "第 " + seq + " 場"}) : null,
               el("span", {className:"nm", textContent:c.name, title:c.name}),
+              dleft != null ? el("span", {className:"dleft", textContent: dleftText(dleft)}) : null,
               !ended && !c.open ? el("span", {className:"tag off", textContent:"已截止"}) : null),
             el("span", {className:"cnt num", textContent: c.count + (c.cap ? " / " + c.cap : "") + " 人"})),
           // 時間列就是展開鈕；地點、連結與按鈕收在裡面（開合狀態在重新整理名單時保留）
@@ -470,6 +522,8 @@ dialog h3{font-size:20px;margin-bottom:4px}
         b.addEventListener("click", () => { FILTER = code; render(); });
         chips.append(b);
       });
+      renderHero(groups.up[0]);
+      renderView(groups);
     } else {
       // 社區負責人：自己社區的資訊
       const c = DATA.communities[0];
@@ -489,6 +543,87 @@ dialog h3{font-size:20px;margin-bottom:4px}
   }
 
   // 社區卡片的收合區：記住哪些卡片是打開的，重新繪製時維持
+  /* ---------- 下一場 ＋ 週／月曆 ---------- */
+  const shortName = n => String(n || "").replace(/社區發展協會$/, "");
+  const dayStart = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+  function daysLeft(c){ const t = eventTime(c.time); return t ? Math.round((dayStart(t.start) - dayStart(new Date())) / 86400000) : null; }
+  const dleftText = n => n <= 0 ? "就是今天" : n === 1 ? "明天" : "還有 " + n + " 天";
+  function openCard(code){
+    setView("list"); OPEN_CARDS.add(code); render();
+    const card = document.getElementById("comm-" + code);
+    if (card) { card.scrollIntoView({behavior:"smooth", block:"center"}); card.classList.add("flash"); setTimeout(() => card.classList.remove("flash"), 1600); }
+  }
+  function renderHero(c){
+    const box = $("#next-hero"); box.innerHTML = "";
+    if (!c) return;
+    const n = daysLeft(c);
+    const b = el("button", {type:"button", className:"hero-next", onclick: () => openCard(c.code)},
+      el("span", {className:"hn-k", textContent:"下一場"}),
+      el("span", {className:"hn-main"},
+        el("span", {className:"hn-name", textContent:c.name}),
+        el("span", {className:"hn-time", textContent:c.time || ""})),
+      el("span", {className:"hn-side"},
+        n != null ? el("span", {className:"hn-days", textContent: dleftText(n)}) : null,
+        el("span", {className:"hn-cnt", textContent:"已報名 " + c.count + (c.cap ? " / " + c.cap : "") + " 人"})));
+    box.append(b);
+  }
+  let VIEW = "list";
+  try { VIEW = localStorage.getItem("admin-view") || "list"; } catch(e) {}
+  let CAL_AT = dayStart(new Date());
+  function setView(v){ VIEW = v; try { localStorage.setItem("admin-view", v); } catch(e) {} }
+  document.querySelectorAll(".views button").forEach(b => b.addEventListener("click", () => { setView(b.dataset.v); CAL_AT = dayStart(new Date()); render(); }));
+  function renderView(groups){
+    document.querySelectorAll(".views button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === VIEW)));
+    $("#list-view").hidden = VIEW !== "list";
+    const cal = $("#cal"); cal.hidden = VIEW === "list"; cal.innerHTML = "";
+    if (VIEW === "list") return;
+    // 每天有哪些場次
+    const next = groups.up[0], byDay = {};
+    groups.up.concat(groups.done).forEach(c => {
+      const t = eventTime(c.time); if (!t) return;
+      const k = dayStart(t.start).getTime();
+      (byDay[k] = byDay[k] || []).push({c, t, done: groups.done.includes(c), next: c === next});
+    });
+    const today = dayStart(new Date()).getTime();
+    let from, days, title;
+    if (VIEW === "week") {
+      from = new Date(CAL_AT); from.setDate(from.getDate() - from.getDay()); days = 7;
+      const to = new Date(from); to.setDate(to.getDate() + 6);
+      title = (from.getMonth() + 1) + "/" + from.getDate() + " – " + (to.getMonth() + 1) + "/" + to.getDate();
+    } else {
+      const first = new Date(CAL_AT.getFullYear(), CAL_AT.getMonth(), 1);
+      from = new Date(first); from.setDate(1 - first.getDay());
+      const last = new Date(CAL_AT.getFullYear(), CAL_AT.getMonth() + 1, 0);
+      days = Math.ceil((first.getDay() + last.getDate()) / 7) * 7;
+      title = CAL_AT.getFullYear() + " 年 " + (CAL_AT.getMonth() + 1) + " 月";
+    }
+    const move = k => { const d = new Date(CAL_AT); if (VIEW === "week") d.setDate(d.getDate() + 7 * k); else d.setMonth(d.getMonth() + k, 1); CAL_AT = d; render(); };
+    cal.append(el("div", {className:"cal-nav"},
+      el("button", {type:"button", className:"btn btn-ghost btn-sm", textContent:"‹", "aria-label":"上一段", onclick: () => move(-1)}),
+      el("b", {textContent:title}),
+      el("button", {type:"button", className:"btn btn-ghost btn-sm", textContent:"›", "aria-label":"下一段", onclick: () => move(1)}),
+      el("button", {type:"button", className:"btn btn-ghost btn-sm", textContent:"今天", onclick: () => { CAL_AT = dayStart(new Date()); render(); }})));
+    const grid = el("div", {className:"cal-grid " + VIEW});
+    "日一二三四五六".split("").forEach(w => grid.append(el("div", {className:"cal-h", textContent:w})));
+    for (let i = 0; i < days; i++) {
+      const d = new Date(from); d.setDate(from.getDate() + i);
+      const k = d.getTime();
+      const out = VIEW === "month" && d.getMonth() !== CAL_AT.getMonth();
+      const cell = el("div", {className:"cal-d" + (k === today ? " today" : "") + (out ? " out" : "")},
+        el("span", {className:"cal-n", textContent: VIEW === "week" || d.getDate() === 1 ? (d.getMonth() + 1) + "/" + d.getDate() : d.getDate()}));
+      (byDay[k] || []).sort((a, b) => a.t.start - b.t.start).forEach(x => {
+        const hm = x.t.start.getHours() || x.t.start.getMinutes() ? x.t.start.getHours() + ":" + String(x.t.start.getMinutes()).padStart(2, "0") : "";
+        cell.append(el("button", {type:"button", className:"ev" + (x.done ? " done" : x.next ? " next" : ""), title:x.c.name + "｜" + x.c.time, onclick: () => openCard(x.c.code)},
+          x.next ? el("b", {className:"ev-k", textContent:"下一場"}) : null,
+          el("span", {className:"ev-t", textContent:hm}),
+          el("span", {className:"ev-n", textContent: shortName(x.c.name)}),
+          VIEW === "week" ? el("span", {className:"ev-c", textContent: x.c.count + " 人"}) : null));
+      });
+      grid.append(cell);
+    }
+    cal.append(grid);
+  }
+
   const OPEN_CARDS = new Set();
   function moreBox(code, when, ...kids){
     const d = el("details", {className:"more"},
