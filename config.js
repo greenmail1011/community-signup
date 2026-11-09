@@ -22,7 +22,7 @@ window.APP_CONFIG = {
     jiugang: { name: "舊港社區發展協會", time: "11/19（四）上午 10:00–11:00", place: "新竹市北區舊港里舊港54號",  line: "https://line.me/ti/g/uSD9HVwXPq", short: "https://pse.is/9u3ck2" },
     dingpu:   { name: "逢春長青會・頂埔里",   time: "11/9（一）上午 10:30–11:30",  place: "頂埔市民活動中心（新竹市經國路三段5號）", line: "https://line.me/ti/g/Z_4q7NMGUV", short: "https://pse.is/9u8pms" },
     dazhuang: { name: "香山社區發展協會",     time: "11/25（三）上午 10:00–11:00", place: "大庄市民活動中心（新竹市宮口街30號）",   line: "https://line.me/ti/g/aArgqAbdbz", short: "https://pse.is/9u8ppy" },
-    haishan:  { name: "海山社區發展協會",     time: "11/26（四）上午 9:00–10:00",  place: "新竹市香山區大湖路61號" },
+    haishan:  { name: "海山社區發展協會",     time: "11/26（四）上午 9:00–10:00",  place: "新竹市香山區大湖路61號", short: "https://pse.is/9undlm" },
     hushan:   { name: "虎山社區發展協會",     time: "11/27（五）上午 9:30–10:30",  place: "新竹市香山區虎山里華江街69巷50號", short: "https://pse.is/9ulzz2" },
     // 師訓（對象是老師）：title／subtitle 會蓋過上面的 EVENT_TITLE／EVENT_SUBTITLE；title 裡的「|」後面那段用橘色
     shanjia:  { name: "苗栗山佳國小", time: "12/18（五）", place: "苗栗山佳國小", line: "https://line.me/ti/g/QgDJ93mdrB", short: "https://pse.is/9u8pqq", title: "無人機|師訓", subtitle: "無人機教師研習｜苗栗山佳國小" }
