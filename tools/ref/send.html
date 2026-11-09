@@ -1,0 +1,9 @@
+<!doctype html><meta charset="utf-8"><title>send</title>
+<p id="s">sending…</p>
+<script>
+// 把同目錄的參考圖以 postMessage 傳給開啟本頁的視窗（給 ChatGPT 上傳參考素材用）
+(async()=>{const fs=new URLSearchParams(location.search).getAll("f");const out=[];
+for(const f of fs){const r=await fetch(new URL(f,location.href).href+"?t="+Date.now());out.push({name:f.split("/").pop(),type:r.headers.get("content-type")||"image/png",buf:await r.arrayBuffer()});}
+if(window.opener){window.opener.postMessage({kind:"dm-ref-files",files:out},"https://chatgpt.com");document.getElementById("s").textContent="sent "+out.length;}
+else document.getElementById("s").textContent="no opener";})();
+</script>
