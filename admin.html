@@ -100,6 +100,11 @@ input:focus{border-color:var(--blue);outline:none}
 .kv dt{color:var(--muted);font-weight:700}
 .kv dd{margin:0;word-break:break-all}
 .row-btns{display:flex;flex-wrap:wrap;gap:6px}
+.grp{display:flex;align-items:baseline;gap:8px;font-size:16px;font-weight:900;margin:4px 0 10px}
+.grp .n{font-size:14px;color:var(--muted);font-weight:700}
+.grp.done{margin-top:20px;padding-top:14px;border-top:2px dashed var(--border);color:var(--muted)}
+.comm.done{background:#F6F8FB;border-color:#DCE3EC}
+.tag.end{color:#FFFFFF;background:#7A879B;border-color:#7A879B}
 
 /* toolbar + list */
 .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
@@ -158,7 +163,11 @@ dialog h3{font-size:20px;margin-bottom:4px}
 
     <section class="card" id="comm-card" hidden>
       <h2>各社區報名頁</h2>
+      <!-- 依活動時間自動分組：進行中（近→遠）、已完成（新→舊）；活動結束時間一過就移到已完成 -->
+      <h3 class="grp" id="grp-up">進行中 <span class="n" id="n-up"></span></h3>
       <div class="comms" id="comms"></div>
+      <h3 class="grp done" id="grp-done" hidden>已完成 <span class="n" id="n-done"></span></h3>
+      <div class="comms" id="comms-done" hidden></div>
     </section>
 
     <section class="card" id="mine-card" hidden>
@@ -243,6 +252,31 @@ dialog h3{font-size:20px;margin-bottom:4px}
   }
   // 對外分享用網址：代碼/（有專屬 LINE／FB 縮圖，打開後自動進 ?c=代碼）。新增社區要跑 tools/make_share.py
   const regUrl = code => new URL("./" + encodeURIComponent(code) + "/", location.href).href;
+  // 從「11/19（四）上午 10:00–11:00」解析出活動開始／結束時間（沒寫年份 → 取離今天最近的那一年；沒寫時間 → 當天 23:59 結束）
+  function eventTime(s){
+    s = String(s || "");
+    const m = s.match(/(\d{1,2})\s*\/\s*(\d{1,2})/);
+    if (!m) return null;
+    const mon = +m[1] - 1, day = +m[2], now = Date.now(), y0 = new Date().getFullYear();
+    const pm = /下午|晚上/.test(s);
+    const hm = [...s.slice(m.index + m[0].length).matchAll(/(\d{1,2}):(\d{2})/g)].map(x => [(+x[1]) + (pm && +x[1] < 12 ? 12 : 0), +x[2]]);
+    let best = null;
+    [y0 - 1, y0, y0 + 1].forEach(y => {
+      const d = new Date(y, mon, day);
+      if (!best || Math.abs(d - now) < Math.abs(best - now)) best = d;
+    });
+    const at = (h, mi) => { const d = new Date(best); d.setHours(h, mi, 0, 0); return d; };
+    return { start: hm.length ? at(hm[0][0], hm[0][1]) : at(0, 0),
+             end:   hm.length ? at(hm[hm.length - 1][0], hm[hm.length - 1][1]) : at(23, 59) };
+  }
+  // 社區依時間分組：進行中（近→遠，時間看不懂的排最後）、已完成（新→舊）
+  function sortComms(list){
+    const now = new Date(), up = [], done = [];
+    list.forEach(c => { const t = eventTime(c.time); (t && t.end < now ? done : up).push({c, t}); });
+    up.sort((a, b) => (a.t ? a.t.start : Infinity) - (b.t ? b.t.start : Infinity));
+    done.sort((a, b) => b.t.start - a.t.start);
+    return { up: up.map(x => x.c), done: done.map(x => x.c) };
+  }
   const fmtPhone = p => /^09\d{8}$/.test(p) ? p.slice(0,4) + "-" + p.slice(4,7) + "-" + p.slice(7) : p;
 
   async function load(cred){
@@ -345,8 +379,15 @@ dialog h3{font-size:20px;margin-bottom:4px}
     $("#comm-card").hidden = !admin;
     $("#chips").hidden = !admin || DATA.communities.length < 2;
     if (admin) {
-      const box = $("#comms"); box.innerHTML = "";
-      DATA.communities.forEach(c => {
+      const groups = sortComms(DATA.communities);
+      const boxUp = $("#comms"), boxDone = $("#comms-done");
+      boxUp.innerHTML = ""; boxDone.innerHTML = "";
+      $("#n-up").textContent = groups.up.length + " 場";
+      $("#n-done").textContent = groups.done.length + " 場";
+      $("#grp-done").hidden = boxDone.hidden = !groups.done.length;
+      if (!groups.up.length) boxUp.append(el("p", {className:"muted", textContent:"目前沒有進行中的場次"}));
+      groups.up.concat(groups.done).forEach(c => {
+        const ended = groups.done.includes(c), box = ended ? boxDone : boxUp;
         const url = regUrl(c.code);
         const short = ((CFG.COMMUNITIES || {})[c.code] || {}).short || "";  // 縮網址（config.js 的 short）
         const kv = el("dl", {className:"kv"});
@@ -357,11 +398,12 @@ dialog h3{font-size:20px;margin-bottom:4px}
         // DM 圖＝該社區海報 poster-代碼.jpg
         const dmImg = new URL("poster-" + encodeURIComponent(c.code) + ".jpg", location.href).href;
         const msg = (((CFG.COMMUNITIES || {})[c.code] || {}).title || CFG.EVENT_TITLE || "").replace("|", "") + "｜" + c.name + "\n" + (c.time ? "時間：" + c.time + "\n" : "") + (c.place ? "地點：" + c.place + "\n" : "") + "報名：" + (short || url);
-        box.append(el("div", {className:"comm"},
+        box.append(el("div", {className:"comm" + (ended ? " done" : "")},
           el("div", {className:"comm-h"},
             el("h3", {textContent:c.name}),
-            el("span", {className:"tag " + (c.open ? "on" : "off"), textContent: c.open ? "開放報名" : "已截止"}),
-            c.line ? null : el("span", {className:"tag warn", textContent:"未設 LINE 群組"}),
+            ended ? el("span", {className:"tag end", textContent:"已完成"})
+                  : el("span", {className:"tag " + (c.open ? "on" : "off"), textContent: c.open ? "開放報名" : "已截止"}),
+            c.line || ended ? null : el("span", {className:"tag warn", textContent:"未設 LINE 群組"}),
             el("span", {className:"cnt num", textContent: c.count + (c.cap ? " / " + c.cap : "") + " 人"})),
           kv,
           el("div", {className:"row-btns"},
@@ -379,7 +421,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
       });
       // 篩選
       const chips = $("#chips"); chips.innerHTML = "";
-      [["all", "全部"]].concat(DATA.communities.map(c => [c.code, c.name])).forEach(([code, name]) => {
+      [["all", "全部"]].concat(groups.up.concat(groups.done).map(c => [c.code, c.name])).forEach(([code, name]) => {
         const n = code === "all" ? DATA.rows.length : DATA.rows.filter(r => r.code === code).length;
         const b = el("button", {type:"button", className:"chip", textContent: name + " " + n});
         b.setAttribute("aria-pressed", String(FILTER === code));
