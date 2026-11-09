@@ -87,7 +87,7 @@ input:focus{border-color:var(--blue);outline:none}
 @media (max-width:640px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* communities (admin) */
-.comms{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.comms{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-items:start}
 .comm{border:2px solid var(--border);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px;background:#FFFFFF}
 .comm-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
 .comm-h h3{font-size:18px;font-weight:900}
@@ -100,6 +100,14 @@ input:focus{border-color:var(--blue);outline:none}
 .kv dt{color:var(--muted);font-weight:700}
 .kv dd{margin:0;word-break:break-all}
 .row-btns{display:flex;flex-wrap:wrap;gap:6px}
+.more{border-top:1.5px dashed var(--border);padding-top:6px}
+.more>summary{cursor:pointer;list-style:none;font-size:15px;font-weight:700;color:var(--blue);padding:6px 0;user-select:none}
+.more>summary::-webkit-details-marker{display:none}
+.more>summary::before{content:"▸ ";display:inline-block;transition:transform .15s}
+.more[open]>summary::before{transform:rotate(90deg)}
+.more[open]>summary .lbl-open{display:none}
+.more:not([open])>summary .lbl-close{display:none}
+.more .kv{margin:4px 0 8px}
 .grp{display:flex;align-items:baseline;gap:8px;font-size:16px;font-weight:900;margin:4px 0 10px}
 .grp .n{font-size:14px;color:var(--muted);font-weight:700}
 .grp.done{margin-top:20px;padding-top:14px;border-top:2px dashed var(--border);color:var(--muted)}
@@ -391,8 +399,12 @@ dialog h3{font-size:20px;margin-bottom:4px}
         const url = regUrl(c.code);
         const short = ((CFG.COMMUNITIES || {})[c.code] || {}).short || "";  // 縮網址（config.js 的 short）
         const kv = el("dl", {className:"kv"});
-        [["時間", c.time], ["地點", c.place], ["縮網址", short], ["報名頁", url]].forEach(([k, v]) => {
+        [["時間", c.time], ["地點", c.place]].forEach(([k, v]) => {
           if (v) kv.append(el("dt", {textContent:k}), el("dd", {textContent:v}));
+        });
+        const kv2 = el("dl", {className:"kv"});
+        [["縮網址", short], ["報名頁", url]].forEach(([k, v]) => {
+          if (v) kv2.append(el("dt", {textContent:k}), el("dd", {textContent:v}));
         });
         // 對外貼文用：社區、時間、地點、報名連結（有縮網址就用縮網址）
         // DM 圖＝該社區海報 poster-代碼.jpg
@@ -406,7 +418,8 @@ dialog h3{font-size:20px;margin-bottom:4px}
             c.line || ended ? null : el("span", {className:"tag warn", textContent:"未設 LINE 群組"}),
             el("span", {className:"cnt num", textContent: c.count + (c.cap ? " / " + c.cap : "") + " 人"})),
           kv,
-          el("div", {className:"row-btns"},
+          // 連結與按鈕收在「操作與連結」裡，點開才顯示（開合狀態在重新整理名單時保留）
+          moreBox(c.code, kv2, el("div", {className:"row-btns"},
             el("button", {type:"button", className:"btn btn-primary btn-sm", textContent:"複製 DM 圖", onclick: () => copyImage(dmImg, c.name + "_DM.jpg")}),
             el("a", {className:"btn btn-ghost btn-sm", href: dmImg, download: c.name + "_DM.jpg", textContent:"下載 DM 圖"}),
             // 紙本報名表（給不會用手機的長輩，工作人員代填）：paper-代碼.pdf，由 tools/make_paper.js 產生
@@ -416,7 +429,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
             btn("報名 QR", () => openQr(c.name, short || url, c.code)),
             btn("複製報名訊息", () => copy(msg)),
             el("a", {className:"btn btn-ghost btn-sm", href:url, target:"_blank", rel:"noopener", textContent:"開啟報名頁"}),
-            sheetUrl(c.code) ? el("a", {className:"btn btn-sheet btn-sm", href:sheetUrl(c.code), target:"_blank", rel:"noopener", textContent:"開啟試算表名單"}) : null)
+            sheetUrl(c.code) ? el("a", {className:"btn btn-sheet btn-sm", href:sheetUrl(c.code), target:"_blank", rel:"noopener", textContent:"開啟試算表名單"}) : null))
         ));
       });
       // 篩選
@@ -446,6 +459,16 @@ dialog h3{font-size:20px;margin-bottom:4px}
     renderList();
   }
 
+  // 社區卡片的收合區：記住哪些卡片是打開的，重新繪製時維持
+  const OPEN_CARDS = new Set();
+  function moreBox(code, ...kids){
+    const d = el("details", {className:"more"},
+      el("summary", {}, el("span", {className:"lbl-open", textContent:"展開操作與連結"}), el("span", {className:"lbl-close", textContent:"收合"})),
+      ...kids);
+    d.open = OPEN_CARDS.has(code);
+    d.addEventListener("toggle", () => { d.open ? OPEN_CARDS.add(code) : OPEN_CARDS.delete(code); });
+    return d;
+  }
   function btn(t, fn){ const b = el("button", {type:"button", className:"btn btn-ghost btn-sm", textContent:t}); b.addEventListener("click", fn); return b; }
 
   // 管理者：對應的 Google 試算表分頁（全部 → 報名總表；某社區 → 名單｜該社區）
