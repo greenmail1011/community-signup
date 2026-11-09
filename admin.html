@@ -88,21 +88,20 @@ input:focus{border-color:var(--blue);outline:none}
 
 /* communities (admin) */
 .comms{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-items:start}
-.comm{border:2px solid var(--border);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px;background:#FFFFFF}
-.comm-h{display:flex;align-items:flex-start;gap:8px}
-.comm-h .ttl{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:4px}
-.comm-h h3{font-size:18px;font-weight:900;max-width:100%;display:flex;align-items:center;gap:8px;min-width:0}
+.comm{border:2px solid var(--border);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;background:#FFFFFF}
+.comm-h{display:flex;align-items:center;gap:8px}
+.comm-h h3{flex:1;font-size:17px;font-weight:900;display:flex;align-items:center;gap:8px;min-width:0}
 .comm-h h3 .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .seq{flex:none;font-size:12px;font-weight:900;color:var(--blue);border:1.5px solid var(--blue);border-radius:999px;padding:1px 8px;line-height:1.4}
 .seq.next{color:#FFFFFF;background:var(--ring);border-color:var(--ring)}
 /* 進行中（左）／已完成（右）並排；手機改上下 */
 .split{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
-.split .comms{grid-template-columns:1fr}
+.split .comms{grid-template-columns:1fr;gap:8px}
 .col{min-width:0}
 @media (max-width:760px){.split{grid-template-columns:1fr}}
-.comm-h .cnt{margin-left:auto;font-weight:900;color:var(--ring);font-size:22px;white-space:nowrap;line-height:1.2}
+.comm-h .cnt{margin-left:auto;font-weight:900;color:var(--ring);font-size:19px;white-space:nowrap;line-height:1.2}
 .kv{line-height:1.5}
-.when{margin:2px 0 0;font-size:19px;font-weight:900;color:var(--ink,#0E2A5E);letter-spacing:.3px}
+.when{font-size:17px;font-weight:900;color:#0E2A5E}
 .comm.done .when{color:#5B6779}
 .tag{font-size:12px;font-weight:700;border-radius:4px;padding:0 6px;border:1.5px solid}
 .tag.on{color:var(--ok);border-color:var(--ok)}
@@ -112,14 +111,13 @@ input:focus{border-color:var(--blue);outline:none}
 .kv dt{color:var(--muted);font-weight:700}
 .kv dd{margin:0;word-break:break-all}
 .row-btns{display:flex;flex-wrap:wrap;gap:6px}
-.more{border-top:1.5px dashed var(--border);padding-top:6px;}
-.more>summary{cursor:pointer;list-style:none;font-size:15px;font-weight:700;color:var(--blue);padding:6px 0;user-select:none}
+.more>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
 .more>summary::-webkit-details-marker{display:none}
-.more>summary::before{content:"▸ ";display:inline-block;transition:transform .15s}
-.more[open]>summary::before{transform:rotate(90deg)}
-.more[open]>summary .lbl-open{display:none}
-.more:not([open])>summary .lbl-close{display:none}
-.more .kv{margin:4px 0 8px}
+.more .tog{margin-left:auto;flex:none;font-size:13px;font-weight:700;color:var(--blue);white-space:nowrap}
+.more .tog::before{content:"▸ ";display:inline-block;transition:transform .15s}
+.more[open] .tog::before{transform:rotate(90deg)}
+.more[open] .lbl-open,.more:not([open]) .lbl-close{display:none}
+.more .kv{margin:8px 0;padding-top:8px;border-top:1.5px dashed var(--border)}
 /* 進行中／已完成：用色塊標籤＋已完成整區灰底，一眼分開 */
 .grp{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:900;margin:6px 0 12px}
 .grp::before{content:"";width:6px;height:22px;border-radius:3px;background:var(--blue)}
@@ -434,7 +432,6 @@ dialog h3{font-size:20px;margin-bottom:4px}
         const url = regUrl(c.code);
         const short = ((CFG.COMMUNITIES || {})[c.code] || {}).short || "";  // 縮網址（config.js 的 short）
         // 時間大字顯示在卡片上；地點、縮網址、報名頁收在「展開」裡
-        const when = el("p", {className:"when", textContent:c.time || "時間未定"});
         const kv2 = el("dl", {className:"kv"});
         [["地點", c.place], ["縮網址", short], ["報名頁", url]].forEach(([k, v]) => {
           if (v) kv2.append(el("dt", {textContent:k}), el("dd", {textContent:v}));
@@ -445,14 +442,13 @@ dialog h3{font-size:20px;margin-bottom:4px}
         const msg = (((CFG.COMMUNITIES || {})[c.code] || {}).title || CFG.EVENT_TITLE || "").replace("|", "") + "｜" + c.name + "\n" + (c.time ? "時間：" + c.time + "\n" : "") + (c.place ? "地點：" + c.place + "\n" : "") + "報名：" + (short || url);
         box.append(el("div", {className:"comm" + (ended ? " done" : "")},
           el("div", {className:"comm-h"},
-            el("div", {className:"ttl"},
-              el("h3", {}, seq ? el("span", {className:"seq" + (seq === 1 ? " next" : ""), textContent: seq === 1 ? "下一場" : "第 " + seq + " 場"}) : null, el("span", {className:"nm", textContent:c.name, title:c.name})),
-              ended ? el("span", {className:"tag end", textContent:"已完成"})
-                    : el("span", {className:"tag " + (c.open ? "on" : "off"), textContent: c.open ? "開放報名" : "已截止"})),
+            // 精簡：只在「已截止」時才顯示狀態標籤（已完成的在右欄，不再標）
+            el("h3", {}, seq ? el("span", {className:"seq" + (seq === 1 ? " next" : ""), textContent: seq === 1 ? "下一場" : "第 " + seq + " 場"}) : null,
+              el("span", {className:"nm", textContent:c.name, title:c.name}),
+              !ended && !c.open ? el("span", {className:"tag off", textContent:"已截止"}) : null),
             el("span", {className:"cnt num", textContent: c.count + (c.cap ? " / " + c.cap : "") + " 人"})),
-          when,
-          // 地點、連結與按鈕收在「操作與連結」裡，點開才顯示（開合狀態在重新整理名單時保留）
-          moreBox(c.code, kv2, el("div", {className:"row-btns"},
+          // 時間列就是展開鈕；地點、連結與按鈕收在裡面（開合狀態在重新整理名單時保留）
+          moreBox(c.code, c.time || "時間未定", kv2, el("div", {className:"row-btns"},
             el("button", {type:"button", className:"btn btn-primary btn-sm", textContent:"複製 DM 圖", onclick: () => copyImage(dmImg, c.name + "_DM.jpg")}),
             el("a", {className:"btn btn-ghost btn-sm", href: dmImg, download: c.name + "_DM.jpg", textContent:"下載 DM 圖"}),
             // 紙本報名表（給不會用手機的長輩，工作人員代填）：paper-代碼.pdf，由 tools/make_paper.js 產生
@@ -494,9 +490,10 @@ dialog h3{font-size:20px;margin-bottom:4px}
 
   // 社區卡片的收合區：記住哪些卡片是打開的，重新繪製時維持
   const OPEN_CARDS = new Set();
-  function moreBox(code, ...kids){
+  function moreBox(code, when, ...kids){
     const d = el("details", {className:"more"},
-      el("summary", {}, el("span", {className:"lbl-open", textContent:"展開地點、連結與操作"}), el("span", {className:"lbl-close", textContent:"收合"})),
+      el("summary", {}, el("span", {className:"when", textContent:when}),
+        el("span", {className:"tog"}, el("span", {className:"lbl-open", textContent:"展開"}), el("span", {className:"lbl-close", textContent:"收合"}))),
       ...kids);
     d.open = OPEN_CARDS.has(code);
     d.addEventListener("toggle", () => { d.open ? OPEN_CARDS.add(code) : OPEN_CARDS.delete(code); });
