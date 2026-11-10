@@ -17,7 +17,7 @@ window.APP_CONFIG = {
   // 各社區活動資料：報名頁會「立刻」用這裡的資料顯示，不必等 Google 回應（約 2～5 秒）。
   // 背景仍會向 Google 試算表確認；試算表「社區設定」改了時間地點、截止或額滿，載入後會自動更新。
   // 新增社區時兩邊都加（title／subtitle 選填，只在 config.js：給不是「青銀飛行趣」的場次用，例如師訓），網頁才會一打開就出現。line 是 LINE 群組邀請連結（試算表沒填時用這裡的）；short 是對外縮網址（PicSee，指向 代碼/ 分享網址），後台會顯示並用在報名訊息與 QR。
-  // date（YYYY-MM-DD，必填）：協會官網 hcdrone.org.tw「活動專區」會自動讀這份檔案，用 date 判斷「即將舉辦／歷史活動」。hidden: true 可讓某場不出現在官網。
+  // date（YYYY-MM-DD，必填）：協會官網 hcdrone.org.tw「活動專區」會自動讀這份檔案，用 date 判斷「即將舉辦／歷史活動」。hidden: true 可讓某場不出現在官網；internal: true 是校內場次（官網只列出、不放報名按鈕，也不發「開放報名」消息）；category 可指定官網最新消息分類（預設：青銀社區發展，有 subtitle 的是培力課程教育）。
   COMMUNITIES: {
     beimen:  { date: "2026-11-06", name: "北門社區發展協會", time: "11/6（五）上午 9:30–10:30",   place: "新竹市經國路二段159巷24號", line: "https://line.me/ti/g/8ERJA5ttfh", short: "https://pse.is/9u2v3j" },
     jiugang: { date: "2026-11-19", name: "舊港社區發展協會", time: "11/19（四）上午 10:00–11:00", place: "新竹市北區舊港里舊港54號",  line: "https://line.me/ti/g/uSD9HVwXPq", short: "https://pse.is/9u3ck2" },
@@ -26,7 +26,7 @@ window.APP_CONFIG = {
     haishan:  { date: "2026-11-26", name: "海山社區發展協會",     time: "11/26（四）上午 9:00–10:00",  place: "新竹市香山區大湖路61號", short: "https://pse.is/9undlm" },
     hushan:   { date: "2026-11-27", name: "虎山社區發展協會",     time: "11/27（五）上午 9:30–10:30",  place: "新竹市香山區虎山里華江街69巷50號", short: "https://pse.is/9ulzz2" },
     // 師訓（對象是老師）：title／subtitle 會蓋過上面的 EVENT_TITLE／EVENT_SUBTITLE；title 裡的「|」後面那段用橘色
-    shanjia:  { date: "2026-12-18", name: "苗栗山佳國小", time: "12/18（五）", place: "苗栗山佳國小", line: "https://line.me/ti/g/QgDJ93mdrB", short: "https://pse.is/9u8pqq", title: "無人機|師訓", subtitle: "無人機教師研習｜苗栗山佳國小" }
+    shanjia:  { date: "2026-12-18", internal: true, name: "苗栗山佳國小", time: "12/18（五）", place: "苗栗山佳國小", line: "https://line.me/ti/g/QgDJ93mdrB", short: "https://pse.is/9u8pqq", title: "無人機|師訓", subtitle: "無人機教師研習｜苗栗山佳國小" }
   }
 };
 // 各社區海報：放在同一層、檔名 poster-社區代碼.jpg（例如 poster-beimen.jpg），沒有就不顯示。
