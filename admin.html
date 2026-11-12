@@ -151,6 +151,7 @@ input:focus{border-color:var(--blue);outline:none}
 .kv{display:grid;grid-template-columns:72px 1fr;gap:2px 8px;font-size:14px;margin:0}
 .kv dt{color:var(--muted);font-weight:700}
 .kv dd{margin:0;word-break:break-all}
+.dm-wait{background:#F1F3F6;color:#7A879B;border:1.5px dashed #B8C3CE;cursor:default}
 .row-btns{display:flex;flex-wrap:wrap;gap:6px}
 .more>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
 .more>summary::-webkit-details-marker{display:none}
@@ -501,8 +502,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
             el("span", {className:"cnt num", textContent: c.count + (c.cap ? " / " + c.cap : "") + " 人"})),
           // 時間列就是展開鈕；地點、連結與按鈕收在裡面（開合狀態在重新整理名單時保留）
           moreBox(c.code, c.time || "時間未定", kv2, el("div", {className:"row-btns"},
-            el("button", {type:"button", className:"btn btn-primary btn-sm", textContent:"複製 DM 圖", onclick: () => copyImage(dmImg, c.name + "_DM.jpg")}),
-            el("a", {className:"btn btn-ghost btn-sm", href: dmImg, download: c.name + "_DM.jpg", textContent:"下載 DM 圖"}),
+            ...dmBtns(dmImg, c.name),
             // 紙本報名表（給不會用手機的長輩，工作人員代填）：paper-代碼.pdf，由 tools/make_paper.js 產生
             el("a", {className:"btn btn-ghost btn-sm", href: new URL("paper-" + encodeURIComponent(c.code) + ".pdf?v=7", location.href).href /* 換 PDF 時 v 加 1，避免瀏覽器快取舊版 */, target:"_blank", rel:"noopener", textContent:"紙本報名表 PDF"}),
             short ? btn("複製縮網址", () => copy(short)) : null,
@@ -633,6 +633,15 @@ dialog h3{font-size:20px;margin-bottom:4px}
     d.open = OPEN_CARDS.has(code);
     d.addEventListener("toggle", () => { d.open ? OPEN_CARDS.add(code) : OPEN_CARDS.delete(code); });
     return d;
+  }
+  // DM 按鈕：先確認 poster-代碼.jpg 存在；還沒做 DM 的場次改顯示「DM 製作中」，不讓人按到下載失敗
+  function dmBtns(img, name){
+    const b1 = el("button", {type:"button", className:"btn btn-primary btn-sm", textContent:"複製 DM 圖", onclick: () => copyImage(img, name + "_DM.jpg")});
+    const b2 = el("a", {className:"btn btn-ghost btn-sm", href: img, download: name + "_DM.jpg", textContent:"下載 DM 圖"});
+    const probe = new Image();
+    probe.onerror = () => { const t = el("span", {className:"btn btn-sm dm-wait", textContent:"DM 製作中"}); b1.replaceWith(t); b2.remove(); };
+    probe.src = img;
+    return [b1, b2];
   }
   function btn(t, fn){ const b = el("button", {type:"button", className:"btn btn-ghost btn-sm", textContent:t}); b.addEventListener("click", fn); return b; }
 
