@@ -20,7 +20,7 @@ window.APP_CONFIG = {
   // date（YYYY-MM-DD，必填）：協會官網 hcdrone.org.tw「活動專區」會自動讀這份檔案，用 date 判斷「即將舉辦／歷史活動」。hidden: true 可讓某場不出現在官網；internal: true 是校內場次（官網只列出、不放報名按鈕，也不發「開放報名」消息）；category 可指定官網最新消息分類（預設：青銀社區發展，有 subtitle 的是培力課程教育）。
   COMMUNITIES: {
     beimen:  { date: "2026-11-06", name: "北門社區發展協會", time: "11/6（五）上午 9:30–10:30",   place: "新竹市經國路二段159巷24號", line: "https://line.me/ti/g/8ERJA5ttfh", short: "https://pse.is/9u2v3j" },
-    gangnan:  { date: "2026-11-13", name: "港南好鄰居關懷協會",   time: "11/13（五）上午 10:00–11:00", place: "新竹市海埔路168號", short: "https://pse.is/9v4ne4" },
+    gangnan:  { date: "2026-11-13", name: "港南好鄰居關懷協會",   time: "11/13（五）上午 10:00–11:00", place: "港南市民活動中心（新竹市海埔路168號）", short: "https://pse.is/9v4ne4" },
     jiugang: { date: "2026-11-19", name: "舊港社區發展協會", time: "11/19（四）上午 10:00–11:00", place: "新竹市北區舊港里舊港54號",  line: "https://line.me/ti/g/uSD9HVwXPq", short: "https://pse.is/9u3ck2" },
     dingpu:   { date: "2026-11-09", name: "逢春長青會・頂埔里",   time: "11/9（一）上午 10:30–11:30",  place: "頂埔市民活動中心（新竹市經國路三段5號）", line: "https://line.me/ti/g/Z_4q7NMGUV", short: "https://pse.is/9u8pms" },
     dazhuang: { date: "2026-11-25", name: "香山社區發展協會",     time: "11/25（三）上午 10:00–11:00", place: "大庄市民活動中心（新竹市宮口街30號）",   line: "https://line.me/ti/g/aArgqAbdbz", short: "https://pse.is/9u8ppy" },

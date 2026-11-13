@@ -282,7 +282,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
   </div>
 </dialog>
 
-<script src="config.js?v=19"></script>
+<script src="config.js?v=20"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (function(){
@@ -504,7 +504,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
           moreBox(c.code, c.time || "時間未定", kv2, el("div", {className:"row-btns"},
             ...dmBtns(dmImg, c.name),
             // 紙本報名表（給不會用手機的長輩，工作人員代填）：paper-代碼.pdf，由 tools/make_paper.js 產生
-            el("a", {className:"btn btn-ghost btn-sm", href: new URL("paper-" + encodeURIComponent(c.code) + ".pdf?v=8", location.href).href /* 換 PDF 時 v 加 1，避免瀏覽器快取舊版 */, target:"_blank", rel:"noopener", textContent:"紙本報名表 PDF"}),
+            el("a", {className:"btn btn-ghost btn-sm", href: new URL("paper-" + encodeURIComponent(c.code) + ".pdf?v=9", location.href).href /* 換 PDF 時 v 加 1，避免瀏覽器快取舊版 */, target:"_blank", rel:"noopener", textContent:"紙本報名表 PDF"}),
             short ? btn("複製縮網址", () => copy(short)) : null,
             btn("複製報名連結", () => copy(url)),
             btn("報名 QR", () => openQr(c.name, short || url, c.code)),
