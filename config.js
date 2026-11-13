@@ -21,6 +21,7 @@ window.APP_CONFIG = {
   COMMUNITIES: {
     beimen:  { date: "2026-11-06", name: "北門社區發展協會", time: "11/6（五）上午 9:30–10:30",   place: "新竹市經國路二段159巷24號", line: "https://line.me/ti/g/8ERJA5ttfh", short: "https://pse.is/9u2v3j" },
     gangnan:  { date: "2026-11-13", name: "港南好鄰居關懷協會",   time: "11/13（五）上午 10:00–11:00", place: "港南市民活動中心（新竹市海埔路168號）", short: "https://pse.is/9v4ne4" },
+    lechao:   { date: "2026-11-14", name: "樂巢代社區管委會",       time: "11/14（六）上午 10:00–11:00", place: "新竹市香山區東華路7號" },
     jiugang: { date: "2026-11-19", name: "舊港社區發展協會", time: "11/19（四）上午 10:00–11:00", place: "新竹市北區舊港里舊港54號",  line: "https://line.me/ti/g/uSD9HVwXPq", short: "https://pse.is/9u3ck2" },
     dingpu:   { date: "2026-11-09", name: "逢春長青會・頂埔里",   time: "11/9（一）上午 10:30–11:30",  place: "頂埔市民活動中心（新竹市經國路三段5號）", line: "https://line.me/ti/g/Z_4q7NMGUV", short: "https://pse.is/9u8pms" },
     dazhuang: { date: "2026-11-25", name: "香山社區發展協會",     time: "11/25（三）上午 10:00–11:00", place: "大庄市民活動中心（新竹市宮口街30號）",   line: "https://line.me/ti/g/aArgqAbdbz", short: "https://pse.is/9u8ppy" },
