@@ -77,7 +77,7 @@ td.done { background: #F6F8FB; }
 .foot { margin-top: 6px; display: flex; justify-content: space-between; font-size: 10.5pt; color: #3A4D73; font-weight: 700; }
 </style></head><body>
 <div class="top">
-  <div><div class="org">${esc(cfg.ORG_NAME)} ✕ ${esc(c.name)}</div>
+  <div><div class="org">${esc(cfg.ORG_NAME)} × ${esc(c.name)}</div>
   <h1>${esc(cfg.EVENT_TITLE)}<small>紙本報名表</small></h1></div>
   <div class="free">免費參加</div>
 </div>

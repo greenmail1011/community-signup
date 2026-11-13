@@ -156,7 +156,7 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
 </style>
 </head>
 <body>
-<div class="top"><div class="top-in"><span id="org">新竹市無人機創新科技協會</span><a class="tel" id="top-tel" href="#">☎ 03-540-3463</a></div></div>
+<div class="top"><div class="top-in"><span id="org">新竹市無人機創新科技協會</span><a class="tel" id="top-tel" href="#"><svg class="ico-tel" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg><span id="top-tel-num">03-540-3463</span></a></div></div>
 
 <main class="wrap">
 
@@ -220,7 +220,7 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
   <!-- 報名成功 -->
   <section class="card" id="done" hidden>
     <div class="done-head">
-      <div class="done-mark" aria-hidden="true">✓</div>
+      <div class="done-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
       <h2 id="done-title">報名成功！</h2>
       <p id="done-text"></p>
     </div>
@@ -259,7 +259,7 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
   if (CFG.ORG_NAME) { $("#org").textContent = CFG.ORG_NAME; $("#f-org").textContent = "活動企劃｜" + CFG.ORG_NAME; }
   if (CFG.ORG_PHONE) {
     const tel = "tel:" + CFG.ORG_PHONE.replace(/[^\d+]/g, "");
-    $("#top-tel").textContent = "☎ " + CFG.ORG_PHONE; $("#top-tel").href = tel;
+    $("#top-tel-num").textContent = CFG.ORG_PHONE; $("#top-tel").href = tel;
     $("#f-tel").textContent = CFG.ORG_PHONE; $("#f-tel").href = tel;
   }
   // 標題：社區有自己的 title／subtitle（例如師訓）就用社區的，否則用 EVENT_TITLE
