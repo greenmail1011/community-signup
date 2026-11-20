@@ -29,6 +29,7 @@ window.APP_CONFIG = {
     hushan:   { date: "2026-11-27", name: "虎山社區發展協會",     time: "11/27（五）上午 9:30–10:30",  place: "新竹市香山區虎山里華江街69巷50號", short: "https://pse.is/9ulzz2" },
     xiangcun:  { date: "2026-12-16", name: "香村社區發展協會",     time: "12/16（三）上午 10:00–11:00", place: "新竹市元培街262號", short: "https://pse.is/9wawag" },
     changqing: { date: "2026-12-17", name: "香山區長青協會",       time: "12/17（四）上午 10:00–11:00", place: "新竹市長福街23號", short: "https://pse.is/9wawbe" },
+    shuitian:  { date: "2026-12-30", name: "水田社區發展協會",     time: "12/30（三）上午 10:00–11:30", place: "新竹市北區水田里水田街98號" },
     // 師訓（對象是老師）：title／subtitle 會蓋過上面的 EVENT_TITLE／EVENT_SUBTITLE；title 裡的「|」後面那段用橘色
     shanjia:  { date: "2026-12-18", internal: true, name: "苗栗山佳國小", time: "12/18（五）", place: "苗栗山佳國小", line: "https://line.me/ti/g/QgDJ93mdrB", short: "https://pse.is/9u8pqq", title: "無人機|師訓", subtitle: "無人機教師研習｜苗栗山佳國小" }
   }
