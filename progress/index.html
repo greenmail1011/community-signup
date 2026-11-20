@@ -167,13 +167,27 @@ function card(r, steps, first){
 }
 
 let DATA = null;
+// 進度來源：① Apps Script（本機即時上傳）② GitHub progress-data 分支 data.json（備援：雲端接手或上傳失敗時用）。同一場取 updated 較新的。
+const GH = "https://raw.githubusercontent.com/greenmail1011/community-signup/progress-data/data.json";
+async function loadRuns(){
+  const [a,g] = await Promise.allSettled([
+    fetch(API+"?action=progress&t="+Date.now(),{credentials:"omit"}).then(r=>r.json()).then(j=>{if(!j.ok)throw new Error(j.error||"api");return j.runs||[]}),
+    fetch(GH+"?t="+Math.floor(Date.now()/60000),{credentials:"omit"}).then(r=>r.json()).then(j=>j.runs||[])
+  ]);
+  if(a.status!=="fulfilled" && g.status!=="fulfilled") throw new Error("no source");
+  const map = {};
+  [...(a.value||[]), ...(g.value||[])].forEach(r=>{
+    const k = r.run, cur = map[k];
+    if(!cur || String(r.updated||"") > String(cur.updated||"")) map[k] = r;
+  });
+  return Object.values(map).sort((x,y)=>String(y.run).localeCompare(String(x.run)));
+}
 async function reload(){
   const dot=document.querySelector("#live .dot");
   try{
-    const j = await fetch(API+"?action=progress&t="+Date.now(),{credentials:"omit"}).then(r=>r.json());
-    if(!j.ok) throw new Error(j.error||"api");
+    const runs = await loadRuns();
     const showTest = /[?&]test\b/.test(location.search);
-    DATA = {runs:(j.runs||[]).filter(r=>showTest || !String(r.run).startsWith("test-"))}; dot.classList.remove("off");
+    DATA = {runs:runs.filter(r=>showTest || !String(r.run).startsWith("test-"))}; dot.classList.remove("off");
   }catch(e){ dot.classList.add("off"); if(!DATA){document.getElementById("app").innerHTML='<div class="empty">暫時讀不到進度，稍後會自動重試。</div>';return} }
   render();
 }
