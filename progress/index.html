@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>青銀飛行趣｜DM 製作即時進度</title>
+<meta name="description" content="新竹市無人機創新科技協會｜青銀飛行趣新場次的 DM、報名頁、FB、LINE 一條龍處理到哪一步，打開就能看到即時進度。">
+<link rel="canonical" href="https://greenmail1011.github.io/community-signup/progress/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="新竹市無人機創新科技協會">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:url" content="https://greenmail1011.github.io/community-signup/progress/">
+<meta property="og:title" content="青銀飛行趣｜DM 製作即時進度">
+<meta property="og:description" content="新竹市無人機創新科技協會｜青銀飛行趣新場次的 DM、報名頁、FB、LINE 一條龍處理到哪一步，打開就能看到即時進度。">
+<meta property="og:image" content="https://greenmail1011.github.io/community-signup/og-progress.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="青銀飛行趣｜DM 製作即時進度">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="青銀飛行趣｜DM 製作即時進度">
+<meta name="twitter:description" content="新竹市無人機創新科技協會｜青銀飛行趣新場次的 DM、報名頁、FB、LINE 一條龍處理到哪一步，打開就能看到即時進度。">
+<meta name="twitter:image" content="https://greenmail1011.github.io/community-signup/og-progress.jpg">
+<style>
+  :root{
+    --bg:#f4f6fa; --card:#fff; --ink:#17233b; --muted:#6b7689; --line:#e3e8f0;
+    --navy:#0e2a5e; --orange:#f08a24; --green:#1f9d63; --red:#d64545; --amber:#c98a00; --gray:#a6afbd;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,"PingFang TC","Noto Sans TC",sans-serif}
+  header{background:var(--navy);color:#fff;padding:18px 28px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  header h1{margin:0;font-size:20px;font-weight:700;letter-spacing:.5px}
+  header h1 span{color:var(--orange)}
+  header .meta{margin-left:auto;font-size:13px;opacity:.85;display:flex;gap:14px;align-items:center}
+  .dot{width:8px;height:8px;border-radius:50%;background:#5ee39b;display:inline-block;margin-right:6px;animation:pulse 2s infinite}
+  .dot.off{background:#ff8a8a;animation:none}
+  @keyframes pulse{50%{opacity:.35}}
+  main{max-width:1100px;margin:0 auto;padding:24px 20px 60px}
+  .empty{background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:40px;text-align:center;color:var(--muted)}
+  .run{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:18px;overflow:hidden}
+  .run.current{border-color:var(--navy);box-shadow:0 4px 18px rgba(14,42,94,.10)}
+  .head{display:flex;gap:16px;align-items:center;padding:16px 20px;cursor:pointer;flex-wrap:wrap}
+  .head h2{margin:0;font-size:17px}
+  .head .sub{color:var(--muted);font-size:13px}
+  .badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap}
+  .b-running{background:#e7eefc;color:var(--navy)}
+  .b-done{background:#e3f5ec;color:var(--green)}
+  .b-fail{background:#fbe6e6;color:var(--red)}
+  .b-wait{background:#fff3d6;color:var(--amber)}
+  .b-skip{background:#eef0f3;color:var(--muted)}
+  .b-stuck{background:#fff3d6;color:var(--amber)}
+  .bar{flex:1 1 220px;min-width:180px;height:10px;background:#edf0f5;border-radius:99px;overflow:hidden;display:flex}
+  .bar i{display:block;height:100%}
+  .pct{font-variant-numeric:tabular-nums;font-weight:700;color:var(--navy);min-width:44px;text-align:right}
+  .body{display:grid;grid-template-columns:1fr 240px;gap:20px;padding:4px 20px 20px;border-top:1px solid var(--line)}
+  .run.collapsed .body{display:none}
+  ol{list-style:none;margin:14px 0 0;padding:0}
+  li{display:grid;grid-template-columns:28px 1fr auto;gap:10px;padding:8px 0;border-bottom:1px solid #f1f3f7;align-items:start}
+  li:last-child{border-bottom:none}
+  .ic{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;margin-top:1px}
+  .s-done .ic{background:var(--green)}
+  .s-fail .ic{background:var(--red)}
+  .s-running .ic{background:var(--navy);animation:pulse 1.4s infinite}
+  .s-wait .ic{background:var(--amber)}
+  .s-skip .ic{background:var(--gray)}
+  .s-pending .ic{background:#fff;border:2px solid #d3d9e3;color:#b3bccb}
+  .s-pending .nm{color:var(--muted)}
+  .nm{font-weight:600}
+  .ds{font-size:12.5px;color:var(--muted)}
+  .note{font-size:13px;margin-top:2px}
+  .s-fail .note{color:var(--red);font-weight:600}
+  .t{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums;text-align:right}
+  aside{padding-top:14px}
+  aside img{width:100%;border-radius:10px;border:1px solid var(--line);display:block}
+  aside .ph{aspect-ratio:4/5;border-radius:10px;border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;text-align:center;padding:10px}
+  dl{margin:12px 0 0;font-size:13px;display:grid;grid-template-columns:auto 1fr;gap:4px 10px}
+  dt{color:var(--muted)} dd{margin:0;word-break:break-all}
+  a{color:var(--navy)}
+  .warn{background:#fff3d6;color:#7a5600;padding:10px 20px;font-size:13.5px;border-top:1px solid #f3e1a8}
+  @media (max-width:760px){.body{grid-template-columns:1fr}aside{max-width:260px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>青銀飛行趣 <span>DM 一條龍</span> 進度</h1>
+  <div class="meta"><span id="live"><span class="dot"></span>每 10 秒自動更新</span><span id="gen"></span></div>
+</header>
+<main id="app"><div class="empty">讀取中…</div></main>
+
+<script>
+const DEFAULT_STEPS = [
+  {id:"detect",name:"偵測到新場次",desc:"LINE 富志科技討論區新訊息"},
+  {id:"queue",name:"排隊＋登入檢查",desc:"一次只跑一場；檢查 Claude 登入"},
+  {id:"check",name:"判斷需求＋核對資訊",desc:"主辦單位、日期星期、時間、地點"},
+  {id:"site",name:"報名系統上線",desc:"報名頁、試算表、分享頁、紙本報名表"},
+  {id:"short",name:"短網址＋QR",desc:"PicSee 短網址、產生並驗證 QR"},
+  {id:"dm",name:"ChatGPT 產生 DM",desc:"送提示詞、下載原圖、逐字核對"},
+  {id:"post",name:"DM 後製＋QR 驗證",desc:"換正式 Logo、貼 QR、掃碼驗證"},
+  {id:"web",name:"網站上線確認",desc:"報名頁、協會官網「即將舉辦」"},
+  {id:"fb",name:"FB 社團發文＋精選",desc:"發文後釘選到「精選」"},
+  {id:"line",name:"LINE 討論區貼文",desc:"DM 圖＋報名訊息"},
+  {id:"wrap",name:"更新交接＋結果摘要",desc:"整理紀錄"}];
+const API = "https://script.google.com/macros/s/AKfycbztSpVfSXbLdHdzgAc5ja1SuEqCwiPD7xJvc5qI09tBF5g6QOyFtTIkivUhDazf-g9xOw/exec";
+const STUCK_MIN = 30;
+const ICON = {done:"✓", fail:"✕", running:"…", wait:"!", skip:"–", pending:""};
+const STATE_TXT = {running:"進行中", done:"全部完成", fail:"有步驟失敗", wait:"等人處理", skip:"不是 DM 需求"};
+const open = {};               // 使用者手動展開/收合的狀態
+
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function parseT(s){return s ? new Date(s.replace(" ","T")) : null}
+function hm(s){return s ? s.slice(11,16) : ""}
+function minsAgo(s){const t=parseT(s);return t?(Date.now()-t)/60000:0}
+function dur(a,b){const x=parseT(a),y=parseT(b);if(!x||!y)return"";const m=Math.round((y-x)/60000);return m<1?"<1 分":m+" 分"}
+
+function render(){
+  const d = DATA, app = document.getElementById("app");
+  if(!d){app.innerHTML='<div class="empty">還沒有任何紀錄。下一場一條龍開始跑之後，這裡就會出現進度。</div>';return}
+  document.getElementById("gen").textContent = "更新 " + new Date().toTimeString().slice(0,5);
+  if(!d.runs.length){app.innerHTML='<div class="empty">還沒有任何紀錄。下一場一條龍開始跑之後，這裡就會出現進度。</div>';return}
+  app.innerHTML = d.runs.map((r,i)=>card(r,r.stepdefs||DEFAULT_STEPS,i===0)).join("");
+  app.querySelectorAll(".head").forEach(h=>h.onclick=()=>{
+    const el=h.parentElement, id=el.dataset.run; open[id]=el.classList.contains("collapsed");
+    el.classList.toggle("collapsed");
+  });
+}
+
+function card(r, steps, first){
+  const info=r.info||{}, st=r.steps||{};
+  const n=steps.length, counted=steps.filter(s=>(st[s.id]||{}).state!=="skip");
+  const doneN=counted.filter(s=>(st[s.id]||{}).state==="done").length;
+  const pct = r.status==="done" ? 100 : Math.round(doneN/Math.max(counted.length,1)*100);
+  const stuck = r.status==="running" && minsAgo(r.updated) > STUCK_MIN;
+  const status = stuck ? "stuck" : r.status;
+  const label = stuck ? `可能卡住（${Math.round(minsAgo(r.updated))} 分鐘沒動）` : (STATE_TXT[r.status]||r.status);
+  const cur = steps.find(s=>(st[s.id]||{}).state==="running");
+  const bad = steps.find(s=>["fail","wait"].includes((st[s.id]||{}).state));
+  const title = info.name ? esc(info.name) : "（還沒辨識出主辦單位）";
+  const sub = [info.code&&`代碼 ${esc(info.code)}`, info.date&&esc(info.date), `開始 ${esc(r.started.slice(5,16))}`,
+               r.finished&&`結束 ${esc(r.finished.slice(11,16))}（${dur(r.started,r.finished)}）`,
+               cur&&`現在：${esc(cur.name)}`].filter(Boolean).join("　·　")
+            + (bad?`<div style="margin-top:3px;color:${(st[bad.id].state==="fail")?"var(--red)":"var(--amber)"};font-weight:600">${esc(bad.name)}：${esc(st[bad.id].note||"")}</div>`:"");
+  const seg = steps.map(s=>{const k=(st[s.id]||{}).state||"pending";
+      const c={done:"var(--green)",fail:"var(--red)",running:"var(--navy)",wait:"var(--amber)",skip:"#d9dee6",pending:"transparent"}[k];
+      return `<i style="width:${100/n}%;background:${c}"></i>`}).join("");
+  const collapsed = (r.run in open) ? !open[r.run] : !(first || r.status==="running");
+  const items = steps.map((s,idx)=>{
+    const x=st[s.id]||{state:"pending"}, k=x.state||"pending";
+    const t = k==="pending" ? "" : (x.start && x.at && x.start!==x.at && k!=="running" ? `${hm(x.start)}–${hm(x.at)}` : hm(x.at||x.start));
+    return `<li class="s-${k}"><div class="ic">${ICON[k]||""}</div>
+      <div><div class="nm">${idx+1}. ${esc(s.name)}</div><div class="ds">${esc(s.desc)}</div>
+      ${x.note?`<div class="note">${esc(x.note)}</div>`:""}</div><div class="t">${t}</div></li>`}).join("");
+  const posterOk = info.code && ["done"].includes((st.post||{}).state);
+  const img = posterOk ? `<a href="../poster-${esc(info.code)}.jpg" target="_blank"><img src="../poster-${esc(info.code)}.jpg?t=${encodeURIComponent(r.updated)}" alt="DM" onerror="this.parentNode.outerHTML='<div class=ph>DM 已完成，網站海報上線中…</div>'"></a>`
+                      : `<div class="ph">DM 完成圖做好後<br>會顯示在這裡</div>`;
+  const short = info.short ? `<a href="https://${esc(info.short.replace(/^https?:\/\//,""))}" target="_blank">${esc(info.short)}</a>` : "—";
+  const page = info.code ? `<a href="https://greenmail1011.github.io/community-signup/?c=${esc(info.code)}" target="_blank">開報名頁</a>` : "—";
+  return `<section class="run ${first?"current":""} ${collapsed?"collapsed":""}" data-run="${esc(r.run)}">
+    <div class="head"><div><h2>${title}</h2><div class="sub">${sub}</div></div>
+      <span class="badge b-${status}">${esc(label)}</span>
+      <div class="bar">${seg}</div><span class="pct">${pct}%</span></div>
+    ${stuck?`<div class="warn">這一場超過 ${STUCK_MIN} 分鐘沒有新進度。請 Harry 到電腦上的監控總覽確認流程還在跑。</div>`:""}
+    <div class="body"><ol>${items}</ol>
+      <aside>${img}<dl>
+        <dt>短網址</dt><dd>${short}</dd>
+        <dt>報名頁</dt><dd>${page}</dd>
+        <dt>地點</dt><dd>${esc(info.place||"—")}</dd>
+      </dl></aside></div></section>`;
+}
+
+let DATA = null;
+async function reload(){
+  const dot=document.querySelector("#live .dot");
+  try{
+    const j = await fetch(API+"?action=progress&t="+Date.now(),{credentials:"omit"}).then(r=>r.json());
+    if(!j.ok) throw new Error(j.error||"api");
+    DATA = {runs:j.runs||[]}; dot.classList.remove("off");
+  }catch(e){ dot.classList.add("off"); if(!DATA){document.getElementById("app").innerHTML='<div class="empty">暫時讀不到進度，稍後會自動重試。</div>';return} }
+  render();
+}
+reload(); setInterval(reload,10000);
+</script>
+</body>
+</html>

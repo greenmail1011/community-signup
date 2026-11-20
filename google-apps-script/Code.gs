@@ -120,6 +120,7 @@ function doGet(e) {
       return out_({ ok: true, community: publicInfo_(c) });
     }
     if (p.action === 'feed') return out_(feed_(p.key));
+    if (p.action === 'progress') return out_(progressGet_());
     if (p.action === 'communities') {
       return out_({ ok: true, communities: communities_().filter(function (c) { return c.open; })
         .map(function (c) { return { code: c.code, name: c.name, time: c.time, place: c.place }; }) });
@@ -145,6 +146,59 @@ function feed_(key) {
   };
 }
 
+/* ---------------- DM 一條龍進度（給「進度頁」用） ---------------- */
+// GET  ?action=progress                          → 最近 20 場一條龍的進度（公開，不含個資）
+// POST {action:'progress', key:通知金鑰, run:{…}} → Mac 上的 progress.py 每一步更新一次
+const SHEET_PROGRESS = '一條龍進度';
+const PROGRESS_KEEP = 60;
+
+function progressSheet_() {
+  const ss = ss_();
+  let sh = ss.getSheetByName(SHEET_PROGRESS);
+  if (!sh) {
+    sh = ss.insertSheet(SHEET_PROGRESS);
+    sh.getRange(1, 1, 1, 3).setValues([['run', '更新時間', '資料(JSON)']]).setFontWeight('bold');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function progressGet_() {
+  const sh = progressSheet_();
+  const n = sh.getLastRow() - 1;
+  if (n < 1) return { ok: true, runs: [] };
+  const runs = sh.getRange(2, 1, n, 3).getDisplayValues()
+    .map(function (r) { try { return JSON.parse(r[2]); } catch (e) { return null; } })
+    .filter(function (r) { return r && r.run; })
+    .sort(function (a, b) { return a.run < b.run ? 1 : -1; })
+    .slice(0, 20);
+  return { ok: true, runs: runs };
+}
+
+function progressPut_(b) {
+  const k = PropertiesService.getScriptProperties().getProperty('NOTIFY_KEY');
+  if (!k || String(b.key || '') !== k) return { ok: false, error: 'key' };
+  const d = b.run;
+  if (!d || !d.run || !/^[\w.-]{1,40}$/.test(String(d.run))) return { ok: false, error: 'bad_run' };
+  const json = JSON.stringify(d);
+  if (json.length > 40000) return { ok: false, error: 'too_big' };
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const sh = progressSheet_();
+    const n = sh.getLastRow() - 1;
+    const ids = n > 0 ? sh.getRange(2, 1, n, 1).getDisplayValues().map(function (r) { return r[0]; }) : [];
+    const i = ids.indexOf(String(d.run));
+    const row = [String(d.run), Utilities.formatDate(new Date(), TZ, 'yyyy/MM/dd HH:mm:ss'), json];
+    const at = i >= 0 ? i + 2 : sh.getLastRow() + 1;
+    sh.getRange(at, 1, 1, 3).setNumberFormat('@').setValues([row]);
+    if (sh.getLastRow() - 1 > PROGRESS_KEEP) sh.deleteRows(2, sh.getLastRow() - 1 - PROGRESS_KEEP); // 最舊的在上面
+    return { ok: true };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 // POST {action:'register', ...}  → 報名
 // POST {action:'data', key}      → 後台資料（依密碼決定看得到哪些社區）
 // POST {action:'data', idToken}  → 後台資料（管理者用 Google 帳號登入）
@@ -153,6 +207,7 @@ function doPost(e) {
     const body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     if (body.action === 'register') return out_(register_(body));
     if (body.action === 'data') return out_(data_(body));
+    if (body.action === 'progress') return out_(progressPut_(body));
     return out_({ ok: false, error: 'bad_action' });
   } catch (err) {
     return out_({ ok: false, error: 'server', detail: String(err) });
