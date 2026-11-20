@@ -172,7 +172,8 @@ async function reload(){
   try{
     const j = await fetch(API+"?action=progress&t="+Date.now(),{credentials:"omit"}).then(r=>r.json());
     if(!j.ok) throw new Error(j.error||"api");
-    DATA = {runs:j.runs||[]}; dot.classList.remove("off");
+    const showTest = /[?&]test\b/.test(location.search);
+    DATA = {runs:(j.runs||[]).filter(r=>showTest || !String(r.run).startsWith("test-"))}; dot.classList.remove("off");
   }catch(e){ dot.classList.add("off"); if(!DATA){document.getElementById("app").innerHTML='<div class="empty">暫時讀不到進度，稍後會自動重試。</div>';return} }
   render();
 }
