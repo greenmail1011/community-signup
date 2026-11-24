@@ -131,6 +131,9 @@ input:focus{border-color:var(--blue);outline:none}
 .ev-t{font-weight:900}.ev-n{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .ev.next{background:var(--ring);color:#FFFFFF;box-shadow:0 0 0 2px #FFD2AE}
 .ev-k{width:100%;font-size:11px}
+.ev.cancelled{background:#E3E6EA;color:#8A94A3;text-decoration:line-through}
+.ev.cancelled .ev-c{background:#C62828;color:#fff;text-decoration:none;border-radius:4px;padding:0 4px;font-weight:700}
+.chip.cancelled{background:#E3E6EA;color:#8A94A3;border-color:#B8C0CA;text-decoration:line-through}
 .ev.done{background:#E9EDF2;color:#7A879B}
 .cal-grid.week .ev{font-size:13px;flex-direction:column;flex-wrap:nowrap}
 .cal-grid.week .ev-n{white-space:normal}
@@ -287,7 +290,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
   </div>
 </dialog>
 
-<script src="config.js?v=36"></script>
+<script src="config.js?v=37"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (function(){
@@ -364,12 +367,13 @@ dialog h3{font-size:20px;margin-bottom:4px}
              end:   hm.length ? at(hm[hm.length - 1][0], hm[hm.length - 1][1]) : at(23, 59) };
   }
   // 社區依時間分組：進行中（近→遠，時間看不懂的排最後）、已完成（新→舊）
+  const isCancelled = c => /已取消/.test(c.time || "");
   function sortComms(list){
-    const now = new Date(), up = [], done = [];
-    list.forEach(c => { const t = eventTime(c.time); (t && t.end < now ? done : up).push({c, t}); });
+    const now = new Date(), up = [], done = [], cancelled = [];
+    list.forEach(c => { if (isCancelled(c)) { cancelled.push(c); return; } const t = eventTime(c.time); (t && t.end < now ? done : up).push({c, t}); });
     up.sort((a, b) => (a.t ? a.t.start : Infinity) - (b.t ? b.t.start : Infinity));
     done.sort((a, b) => b.t.start - a.t.start);
-    return { up: up.map(x => x.c), done: done.map(x => x.c) };
+    return { up: up.map(x => x.c), done: done.map(x => x.c), cancelled: cancelled };
   }
   const fmtPhone = p => /^09\d{8}$/.test(p) ? p.slice(0,4) + "-" + p.slice(4,7) + "-" + p.slice(7) : p;
 
@@ -482,7 +486,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
       $("#n-done").textContent = groups.done.length + " 場";
       if (!groups.done.length) boxDone.append(el("p", {className:"muted", textContent:"還沒有已完成的場次"}));
       if (!groups.up.length) boxUp.append(el("p", {className:"muted", textContent:"目前沒有進行中的場次"}));
-      groups.up.concat(groups.done).forEach(c => {
+      groups.up.concat(groups.cancelled, groups.done).forEach(c => {
         const ended = groups.done.includes(c), box = ended ? boxDone : boxUp;
         const seq = ended ? 0 : groups.up.indexOf(c) + 1; // 進行中依日期排的序號：1 = 下一場
         const url = regUrl(c.code);
@@ -522,9 +526,10 @@ dialog h3{font-size:20px;margin-bottom:4px}
       });
       // 篩選
       const chips = $("#chips"); chips.innerHTML = "";
-      [["all", "全部"]].concat(groups.up.concat(groups.done).map(c => [c.code, c.name])).forEach(([code, name]) => {
+      [["all", "全部"]].concat(groups.up.concat(groups.cancelled, groups.done).map(c => [c.code, c.name])).forEach(([code, name]) => {
         const n = code === "all" ? DATA.rows.length : DATA.rows.filter(r => r.code === code).length;
-        const b = el("button", {type:"button", className:"chip", textContent: name + " " + n});
+        const canc = code !== "all" && isCancelled(DATA.communities.find(x => x.code === code) || {});
+        const b = el("button", {type:"button", className:"chip" + (canc ? " cancelled" : ""), textContent: canc ? name + "（已取消）" : name + " " + n});
         b.setAttribute("aria-pressed", String(FILTER === code));
         b.addEventListener("click", () => { FILTER = code; render(); });
         chips.append(b);
@@ -586,10 +591,10 @@ dialog h3{font-size:20px;margin-bottom:4px}
     if (VIEW === "list") return;
     // 每天有哪些場次
     const next = groups.up[0], byDay = {};
-    groups.up.concat(groups.done).forEach(c => {
+    groups.up.concat(groups.cancelled, groups.done).forEach(c => {
       const t = eventTime(c.time); if (!t) return;
       const k = dayStart(t.start).getTime();
-      (byDay[k] = byDay[k] || []).push({c, t, done: groups.done.includes(c), next: c === next});
+      (byDay[k] = byDay[k] || []).push({c, t, done: groups.done.includes(c), canc: isCancelled(c), next: c === next});
     });
     const today = dayStart(new Date()).getTime();
     let from, days, title;
@@ -620,11 +625,11 @@ dialog h3{font-size:20px;margin-bottom:4px}
         el("span", {className:"cal-n", textContent: VIEW === "week" || d.getDate() === 1 ? (d.getMonth() + 1) + "/" + d.getDate() : d.getDate()}));
       (byDay[k] || []).sort((a, b) => a.t.start - b.t.start).forEach(x => {
         const hm = x.t.start.getHours() || x.t.start.getMinutes() ? x.t.start.getHours() + ":" + String(x.t.start.getMinutes()).padStart(2, "0") : "";
-        cell.append(el("button", {type:"button", className:"ev" + (x.done ? " done" : x.next ? " next" : ""), title:x.c.name + "｜" + x.c.time, onclick: () => openCard(x.c.code)},
+        cell.append(el("button", {type:"button", className:"ev" + (x.canc ? " cancelled" : x.done ? " done" : x.next ? " next" : ""), title:x.c.name + "｜" + x.c.time, onclick: () => openCard(x.c.code)},
           x.next ? el("b", {className:"ev-k", textContent:"下一場"}) : null,
           el("span", {className:"ev-t", textContent:hm}),
           el("span", {className:"ev-n", textContent: shortName(x.c.name)}),
-          VIEW === "week" ? el("span", {className:"ev-c", textContent: x.c.count + " 人"}) : null));
+          x.canc ? el("span", {className:"ev-c", textContent:"已取消"}) : (VIEW === "week" ? el("span", {className:"ev-c", textContent: x.c.count + " 人"}) : null)));
       });
       grid.append(cell);
     }
