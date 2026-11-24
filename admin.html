@@ -287,7 +287,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
   </div>
 </dialog>
 
-<script src="config.js?v=35"></script>
+<script src="config.js?v=36"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (function(){
@@ -504,7 +504,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
             el("h3", {}, seq ? el("span", {className:"seq" + (seq === 1 ? " next" : ""), textContent: seq === 1 ? "下一場" : "第 " + seq + " 場"}) : null,
               el("span", {className:"nm", textContent:c.name, title:c.name}),
               dleft != null ? el("span", {className:"dleft", textContent: dleftText(dleft)}) : null,
-              ((CFG.COMMUNITIES || {})[c.code] || {}).note ? el("span", {className:"tag pending", textContent:"待調整", title:CFG.COMMUNITIES[c.code].note}) : null,
+              ((CFG.COMMUNITIES || {})[c.code] || {}).note ? el("span", {className:"tag pending", textContent:CFG.COMMUNITIES[c.code].noteTag || "待調整", title:CFG.COMMUNITIES[c.code].note}) : null,
               /已取消/.test(c.time || "") ? el("span", {className:"tag cancel", textContent:"已取消"}) : (!ended && !c.open ? el("span", {className:"tag off", textContent:"已截止"}) : null)),
             el("span", {className:"cnt num", textContent: c.count + (c.cap ? " / " + c.cap : "") + " 人"})),
           // 時間列就是展開鈕；地點、連結與按鈕收在裡面（開合狀態在重新整理名單時保留）
