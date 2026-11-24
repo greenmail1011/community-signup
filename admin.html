@@ -171,6 +171,7 @@ input:focus{border-color:var(--blue);outline:none}
 .col-done .grp{margin-top:0}
 .comm.done{background:#F6F8FB;border-color:#DCE3EC}
 .tag.cancel{color:#fff;background:#C62828;border-color:#C62828;font-size:14px;padding:1px 10px}
+.tag.pending{color:#fff;background:#E07A1F;border-color:#E07A1F;font-size:14px;padding:1px 10px}
 .tag.end{color:#FFFFFF;background:#7A879B;border-color:#7A879B}
 
 /* toolbar + list */
@@ -283,7 +284,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
   </div>
 </dialog>
 
-<script src="config.js?v=30"></script>
+<script src="config.js?v=31"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (function(){
@@ -494,11 +495,13 @@ dialog h3{font-size:20px;margin-bottom:4px}
         const msg = (((CFG.COMMUNITIES || {})[c.code] || {}).title || CFG.EVENT_TITLE || "").replace("|", "") + "｜" + c.name + "\n" + (c.time ? "時間：" + c.time + "\n" : "") + (c.place ? "地點：" + c.place + "\n" : "") + "報名：" + (short || url);
         const dleft = seq === 1 ? daysLeft(c) : null;
         box.append(el("div", {className:"comm" + (ended ? " done" : "") + (seq === 1 ? " is-next" : ""), id:"comm-" + c.code},
+          ((CFG.COMMUNITIES || {})[c.code] || {}).note ? el("div", {style:"background:#FFF3E0;color:#B85C00;font-weight:700;border-radius:8px;padding:6px 10px;margin-bottom:6px", textContent:"⚠ " + CFG.COMMUNITIES[c.code].note}) : null,
           el("div", {className:"comm-h"},
             // 精簡：只在「已截止」時才顯示狀態標籤（已完成的在右欄，不再標）
             el("h3", {}, seq ? el("span", {className:"seq" + (seq === 1 ? " next" : ""), textContent: seq === 1 ? "下一場" : "第 " + seq + " 場"}) : null,
               el("span", {className:"nm", textContent:c.name, title:c.name}),
               dleft != null ? el("span", {className:"dleft", textContent: dleftText(dleft)}) : null,
+              ((CFG.COMMUNITIES || {})[c.code] || {}).note ? el("span", {className:"tag pending", textContent:"待調整", title:CFG.COMMUNITIES[c.code].note}) : null,
               /已取消/.test(c.time || "") ? el("span", {className:"tag cancel", textContent:"已取消"}) : (!ended && !c.open ? el("span", {className:"tag off", textContent:"已截止"}) : null)),
             el("span", {className:"cnt num", textContent: c.count + (c.cap ? " / " + c.cap : "") + " 人"})),
           // 時間列就是展開鈕；地點、連結與按鈕收在裡面（開合狀態在重新整理名單時保留）
