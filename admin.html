@@ -170,6 +170,7 @@ input:focus{border-color:var(--blue);outline:none}
 .col-done{background:#EEF2F7;border-radius:16px;padding:12px}
 .col-done .grp{margin-top:0}
 .comm.done{background:#F6F8FB;border-color:#DCE3EC}
+.tag.cancel{color:#fff;background:#C62828;border-color:#C62828;font-size:14px;padding:1px 10px}
 .tag.end{color:#FFFFFF;background:#7A879B;border-color:#7A879B}
 
 /* toolbar + list */
@@ -282,7 +283,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
   </div>
 </dialog>
 
-<script src="config.js?v=29"></script>
+<script src="config.js?v=30"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (function(){
@@ -498,7 +499,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
             el("h3", {}, seq ? el("span", {className:"seq" + (seq === 1 ? " next" : ""), textContent: seq === 1 ? "下一場" : "第 " + seq + " 場"}) : null,
               el("span", {className:"nm", textContent:c.name, title:c.name}),
               dleft != null ? el("span", {className:"dleft", textContent: dleftText(dleft)}) : null,
-              !ended && !c.open ? el("span", {className:"tag off", textContent:"已截止"}) : null),
+              /已取消/.test(c.time || "") ? el("span", {className:"tag cancel", textContent:"已取消"}) : (!ended && !c.open ? el("span", {className:"tag off", textContent:"已截止"}) : null)),
             el("span", {className:"cnt num", textContent: c.count + (c.cap ? " / " + c.cap : "") + " 人"})),
           // 時間列就是展開鈕；地點、連結與按鈕收在裡面（開合狀態在重新整理名單時保留）
           moreBox(c.code, c.time || "時間未定", kv2, el("div", {className:"row-btns"},

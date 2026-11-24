@@ -245,7 +245,7 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
 </main>
 
 
-<script src="config.js?v=29"></script>
+<script src="config.js?v=30"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (function(){
@@ -320,6 +320,7 @@ footer a{font-family:var(--f-round);font-weight:400;font-size:24px;color:var(--r
 
   const LOCAL = CFG.COMMUNITIES || {};
   function applyStatus(c){
+    if (/已取消/.test(c.time || "") || c.cancelled) { fail("⚠️ 本場活動已取消", "因當天活動場地改作投票所，本場課程取消，不再開放報名。造成不便敬請見諒，如有問題請來電洽詢。"); const e = $("#error"); e.style.cssText = "border:4px solid #C62828;background:#FFEBEE;border-radius:18px"; $("#err-title").style.cssText = "color:#C62828;font-size:clamp(30px,9vw,40px);font-weight:900"; return false; }
     if (!c.open) { fail("這場活動已經截止報名", "謝謝你的關注！如有問題請來電洽詢。"); return false; }
     if (c.full) { fail("這場活動名額已滿", "謝謝你的關注！如想候補請來電洽詢。"); return false; }
     return true;
