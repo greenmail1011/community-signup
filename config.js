@@ -26,7 +26,7 @@ window.APP_CONFIG = {
     dingpu:   { date: "2026-11-09", name: "逢春長青會・頂埔里",   time: "11/9（一）上午 10:30–11:30",  place: "頂埔市民活動中心（新竹市經國路三段5號）", line: "https://line.me/ti/g/Z_4q7NMGUV", short: "https://pse.is/9u8pms" },
     dazhuang: { date: "2026-11-25", name: "香山社區發展協會",     time: "11/25（三）上午 10:00–11:00", place: "大庄市民活動中心（新竹市宮口街30號）",   line: "https://line.me/ti/g/aArgqAbdbz", short: "https://pse.is/9u8ppy" },
     haishan:  { date: "2026-11-26", name: "海山社區發展協會",     time: "11/26（四）上午 9:00–10:00",  place: "新竹市香山區大湖路61號", short: "https://pse.is/9undlm" },
-    hushan:   { date: "2026-11-27", name: "虎山社區發展協會",     time: "11/27（五）上午 9:30–10:30",  place: "新竹市香山區虎山里華江街69巷50號", short: "https://pse.is/9ulzz2" },
+    hushan:   { date: "2026-11-27", hidden: true, name: "虎山社區發展協會",     time: "11/27（五）上午 9:30–10:30",  place: "新竹市香山區虎山里華江街69巷50號", short: "https://pse.is/9ulzz2" },
     xiangcun:  { date: "2026-12-16", name: "香村社區發展協會",     time: "12/16（三）上午 10:00–11:00", place: "新竹市元培街262號", short: "https://pse.is/9wawag" },
     changqing: { date: "2026-12-17", name: "香山區長青協會",       time: "12/17（四）上午 10:00–11:00", place: "新竹市長福街23號", short: "https://pse.is/9wawbe" },
     shuitian:  { date: "2026-12-30", name: "水田社區發展協會",     time: "12/30（三）上午 10:00–11:30", place: "新竹市北區水田里水田街98號", short: "https://pse.is/9wbus8" },
