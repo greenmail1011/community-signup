@@ -79,7 +79,7 @@ input:focus{border-color:var(--blue);outline:none}
 .pw-box .btn{display:flex;width:100%}
 
 /* stats */
-.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
 .stat{background:var(--panel);border:0;border-radius:16px;box-shadow:0 6px 18px -14px rgba(14,42,94,.5);padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
 .stat small{color:var(--muted);font-weight:700;font-size:13px}
 .stat b{font-size:28px;font-weight:900;line-height:1.2}
@@ -287,7 +287,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
   </div>
 </dialog>
 
-<script src="config.js?v=32"></script>
+<script src="config.js?v=33"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (function(){
@@ -508,7 +508,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
               /已取消/.test(c.time || "") ? el("span", {className:"tag cancel", textContent:"已取消"}) : (!ended && !c.open ? el("span", {className:"tag off", textContent:"已截止"}) : null)),
             el("span", {className:"cnt num", textContent: c.count + (c.cap ? " / " + c.cap : "") + " 人"})),
           // 時間列就是展開鈕；地點、連結與按鈕收在裡面（開合狀態在重新整理名單時保留）
-          moreBox(c.code, c.time || "時間未定", kv2, el("div", {className:"row-btns"},
+          moreBox(c.code, c.time || "時間未定", kv2, feebyBox(c), el("div", {className:"row-btns"},
             ...dmBtns(dmImg, c.name),
             // 紙本報名表（給不會用手機的長輩，工作人員代填）：paper-代碼.pdf，由 tools/make_paper.js 產生
             el("a", {className:"btn btn-ghost btn-sm", href: new URL("paper-" + encodeURIComponent(c.code) + ".pdf?v=12", location.href).href /* 換 PDF 時 v 加 1，避免瀏覽器快取舊版 */, target:"_blank", rel:"noopener", textContent:"紙本報名表 PDF"}),
@@ -632,6 +632,21 @@ dialog h3{font-size:20px;margin-bottom:4px}
   }
 
   const OPEN_CARDS = new Set();
+  // 這場推廣賣出幾台 Feeby（寫回「社區設定」的 Feeby售出台數）
+  function feebyBox(c){
+    const inp = el("input", {type:"number", min:"0", max:"999", value:String(c.feeby || 0), style:"width:72px;font-size:18px;font-weight:900;padding:4px 8px;border:1.5px solid var(--border);border-radius:8px"});
+    const save = el("button", {className:"btn btn-sm", type:"button", textContent:"儲存"});
+    save.onclick = async () => {
+      save.disabled = true;
+      try {
+        const r = await (await fetch(API, {method:"POST", body: JSON.stringify(Object.assign({action:"feeby", code:c.code, qty:inp.value}, CRED)), credentials:"omit"})).json();
+        if (r.ok) { c.feeby = r.qty; render(); toast("已記錄：" + c.name + " 售出 " + r.qty + " 台"); }
+        else toast(r.error === "bad_action" ? "後台程式尚未更新（Apps Script 要重新部署）" : "儲存失敗：" + (r.error || ""));
+      } catch (e) { toast("儲存失敗，請稍後再試"); }
+      save.disabled = false;
+    };
+    return el("div", {style:"display:flex;align-items:center;gap:8px;margin:8px 0;font-weight:700"}, el("span", {textContent:"🛩 Feeby 售出"}), inp, el("span", {textContent:"台"}), save);
+  }
   function moreBox(code, when, ...kids){
     const d = el("details", {className:"more"},
       el("summary", {}, el("span", {className:"when", textContent:when}),
@@ -680,7 +695,8 @@ dialog h3{font-size:20px;margin-bottom:4px}
     [["報名人數", scope.length, "人"],
      ["男／女", g("男") + "／" + g("女"), g("不便透露") ? "不便透露 " + g("不便透露") : ""],
      ["65 歲以上", band(65, 200), "18–64 歲 " + band(18, 64)],
-     ["17 歲以下", band(0, 17), ages.length ? "平均 " + (ages.reduce((a, b) => a + b, 0) / ages.length).toFixed(0) + " 歲" : ""]
+     ["17 歲以下", band(0, 17), ages.length ? "平均 " + (ages.reduce((a, b) => a + b, 0) / ages.length).toFixed(0) + " 歲" : ""],
+     ["Feeby 售出", DATA.communities.filter(c => FILTER === "all" || c.code === FILTER).reduce((a, c) => a + (c.feeby || 0), 0), "台"]
     ].forEach(([k, v, s]) => st.append(el("div", {className:"stat"}, el("small", {textContent:k}), el("b", {className:"num", textContent:v}), el("span", {textContent:s}))));
 
     $("#updated").textContent = "共 " + rows.length + " 筆" + (rows.length !== scope.length ? "（搜尋結果）" : "") +

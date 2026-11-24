@@ -208,6 +208,7 @@ function doPost(e) {
     if (body.action === 'register') return out_(register_(body));
     if (body.action === 'data') return out_(data_(body));
     if (body.action === 'progress') return out_(progressPut_(body));
+    if (body.action === 'feeby') return out_(feebySet_(body));
     return out_({ ok: false, error: 'bad_action' });
   } catch (err) {
     return out_({ ok: false, error: 'server', detail: String(err) });
@@ -314,7 +315,7 @@ function data_(b) {
     sheet: sheet, // 只有管理者拿得到試算表連結
     communities: comms.map(function (c) {
       const o = { code: c.code, name: c.name, time: c.time, place: c.place, line: c.line, open: c.open, cap: c.cap, count: count[c.code] || 0 };
-      if (role === 'admin') { o.pass = c.pass; o.gid = tabs[c.code]; } // 只有管理者拿得到社區密碼與分頁
+      if (role === 'admin') { o.pass = c.pass; o.gid = tabs[c.code]; o.feeby = c.feeby; } // 只有管理者拿得到社區密碼與分頁
       return o;
     }),
     rows: rows.map(function (r) {
@@ -470,7 +471,8 @@ function communities_() {
       line: g(r, 'LINE群組連結'),
       pass: g(r, '社區後台密碼'),
       open: !/^(否|不|關|關閉|停止|no|n|false|0)$/i.test(g(r, '開放報名')),
-      cap: parseInt(g(r, '名額上限'), 10) || 0
+      cap: parseInt(g(r, '名額上限'), 10) || 0,
+      feeby: parseInt(g(r, 'Feeby售出台數'), 10) || 0
     };
   });
 }
@@ -512,4 +514,35 @@ function randomKey_(n) {
 
 function out_(o) {
   return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
+}
+
+
+/**
+ * POST {action:'feeby', code, qty, 加上後台登入資料(session / idToken / key)} → 記錄該場推廣賣出幾台 Feeby（只有管理者）
+ * 寫在「社區設定」的「Feeby售出台數」欄，沒有這一欄會自動建立。
+ */
+function feebySet_(b) {
+  const d = data_(b);
+  if (!d.ok) return d;
+  if (d.role !== 'admin') return { ok: false, error: 'not_admin' };
+  const qty = parseInt(b.qty, 10);
+  if (isNaN(qty) || qty < 0 || qty > 999) return { ok: false, error: 'bad_qty' };
+  const code = String(b.code || '').trim().toLowerCase();
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sh = sheet_(SHEET_CONF);
+    const v = sh.getDataRange().getDisplayValues();
+    const h = v[0].map(function (x) { return String(x).trim(); });
+    let col = h.indexOf('Feeby售出台數');
+    if (col < 0) { col = h.length; sh.getRange(1, col + 1).setValue('Feeby售出台數'); }
+    const ic = h.indexOf('社區代碼');
+    for (let i = 1; i < v.length; i++) {
+      if (String(v[i][ic]).trim().toLowerCase() === code) {
+        sh.getRange(i + 1, col + 1).setValue(qty);
+        return { ok: true, code: code, qty: qty };
+      }
+    }
+    return { ok: false, error: 'no_community' };
+  } finally { lock.releaseLock(); }
 }
