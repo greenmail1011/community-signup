@@ -1,7 +1,7 @@
 // ===== 報名系統設定（報名頁、後台共用；改這裡就好） =====
 window.APP_CONFIG = {
   // Google Apps Script「網頁應用程式網址」（…/exec 結尾）。部署完貼進引號中間。
-  API_URL: "https://script.google.com/macros/s/AKfycbztSpVfSXbLdHdzgAc5ja1SuEqCwiPD7xJvc5qI09tBF5g6QOyFtTIkivUhDazf-g9xOw/exec",
+  API_URL: "https://script.google.com/macros/s/AKfycbyWJtSJAKue6DnFvyCAbDE2UTg_lxSgEVwA-bznCeeChwM3NHmWDManhS1wSVdaxnUJLQ/exec",
 
   // 報名頁大標題與副標
   EVENT_TITLE: "青銀飛行趣",
