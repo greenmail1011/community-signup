@@ -290,7 +290,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
   </div>
 </dialog>
 
-<script src="config.js?v=38"></script>
+<script src="config.js?v=39"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (function(){
@@ -486,7 +486,8 @@ dialog h3{font-size:20px;margin-bottom:4px}
       $("#n-done").textContent = groups.done.length + " 場";
       if (!groups.done.length) boxDone.append(el("p", {className:"muted", textContent:"還沒有已完成的場次"}));
       if (!groups.up.length) boxUp.append(el("p", {className:"muted", textContent:"目前沒有進行中的場次"}));
-      groups.up.concat(groups.cancelled, groups.done).forEach(c => {
+      const startOf = c => { const t = eventTime(c.time); return t ? t.start.getTime() : Infinity; };
+      groups.up.concat(groups.cancelled).sort((a, b) => startOf(a) - startOf(b)).concat(groups.done).forEach(c => {
         const ended = groups.done.includes(c), box = ended ? boxDone : boxUp;
         const seq = ended ? 0 : groups.up.indexOf(c) + 1; // 進行中依日期排的序號：1 = 下一場
         const url = regUrl(c.code);
@@ -526,7 +527,7 @@ dialog h3{font-size:20px;margin-bottom:4px}
       });
       // 篩選
       const chips = $("#chips"); chips.innerHTML = "";
-      [["all", "全部"]].concat(groups.up.concat(groups.cancelled, groups.done).map(c => [c.code, c.name])).forEach(([code, name]) => {
+      [["all", "全部"]].concat(groups.up.concat(groups.cancelled).sort((a, b) => startOf(a) - startOf(b)).concat(groups.done).map(c => [c.code, c.name])).forEach(([code, name]) => {
         const n = code === "all" ? DATA.rows.length : DATA.rows.filter(r => r.code === code).length;
         const canc = code !== "all" && isCancelled(DATA.communities.find(x => x.code === code) || {});
         const b = el("button", {type:"button", className:"chip" + (canc ? " cancelled" : ""), textContent: canc ? name + "（已取消）" : name + " " + n});
